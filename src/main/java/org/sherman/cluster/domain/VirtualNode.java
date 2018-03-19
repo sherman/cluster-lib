@@ -54,7 +54,6 @@ public class VirtualNode {
         return com.google.common.base.Objects.hashCode(id);
     }
 
-
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)

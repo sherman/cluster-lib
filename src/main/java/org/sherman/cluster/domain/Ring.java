@@ -23,8 +23,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
+import com.google.common.primitives.Longs;
 import org.jetbrains.annotations.NotNull;
 import org.sherman.cluster.util.Integers;
+import org.sherman.cluster.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +78,21 @@ public class Ring {
     @NotNull
     public VirtualNode getByToken(long token) {
         return virtualNodes.get(token);
+    }
+
+    @NotNull
+    public VirtualNode getByKey(@NotNull byte[] key) {
+        return getByToken(Tokens.getTokenByKey(key));
+    }
+
+    @NotNull
+    public VirtualNode getByKey(@NotNull String key) {
+        return getByKey(key.getBytes());
+    }
+
+    @NotNull
+    public VirtualNode getByKey(long key) {
+        return getByKey(Longs.toByteArray(key));
     }
 
     private VirtualNode getNode(long lower, long upper) {
