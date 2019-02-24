@@ -20,6 +20,7 @@ package org.sherman.cluster.domain;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
@@ -30,6 +31,7 @@ import org.sherman.cluster.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Ring {
@@ -93,6 +95,10 @@ public class Ring {
     @NotNull
     public VirtualNode getByKey(long key) {
         return getByKey(Longs.toByteArray(key));
+    }
+
+    public List<VirtualNode> getVirtualNodes() {
+        return ImmutableList.copyOf(virtualNodes.asMapOfRanges().values());
     }
 
     private VirtualNode getNode(long lower, long upper) {
