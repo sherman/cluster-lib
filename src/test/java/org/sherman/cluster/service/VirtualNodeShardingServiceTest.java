@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ShardingServiceTest {
-    private static final Logger log = LoggerFactory.getLogger(ShardingServiceTest.class);
+public class VirtualNodeShardingServiceTest {
+    private static final Logger log = LoggerFactory.getLogger(VirtualNodeShardingServiceTest.class);
 
     @Test
     public void getByKey() {
@@ -41,7 +41,7 @@ public class ShardingServiceTest {
 
         Ring ring = new Ring(128); // must be enough buckets to spread a data evenly
 
-        ShardingService shardingService = new ShardingServiceImpl(serverStorage, ring);
+        ShardingService shardingService = new VirtualNodeShardingService(serverStorage, ring);
 
         Map<ServerNode, AtomicInteger> distribution = new HashMap<>();
         for (int i = 0; i < 1024 * 1024; i++) {

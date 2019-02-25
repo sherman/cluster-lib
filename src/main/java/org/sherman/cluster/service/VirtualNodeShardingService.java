@@ -31,13 +31,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ShardingServiceImpl implements ShardingService {
+public class VirtualNodeShardingService implements ShardingService {
     private final Ring ring;
     private final ServerStorage serverStorage;
 
     private final Map<VirtualNode, ServerNode> virtualNodesToServerNodes = new HashMap<>();
 
-    public ShardingServiceImpl(ServerStorage serverStorage, Ring ring) {
+    public VirtualNodeShardingService(ServerStorage serverStorage, Ring ring) {
         this.serverStorage = serverStorage;
         this.ring = ring;
 
