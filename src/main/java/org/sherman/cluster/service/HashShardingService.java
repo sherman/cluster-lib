@@ -22,9 +22,10 @@ package org.sherman.cluster.service;
 import org.jetbrains.annotations.NotNull;
 import org.sherman.cluster.domain.ServerNode;
 
-public interface ShardingService {
+public interface HashShardingService {
     @NotNull
     ServerNode getNodeByKey(@NotNull String key);
 
+    @NotNull
     ServerNode getNodeByKey(@NotNull byte[] key);
 }

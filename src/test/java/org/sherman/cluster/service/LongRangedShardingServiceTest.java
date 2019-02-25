@@ -20,7 +20,7 @@ package org.sherman.cluster.service;
  */
 
 import com.google.common.collect.ImmutableList;
-import org.sherman.cluster.domain.Ring;
+import com.google.common.collect.Range;
 import org.sherman.cluster.domain.ServerNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VirtualNodeShardingServiceTest {
-    private static final Logger log = LoggerFactory.getLogger(VirtualNodeShardingServiceTest.class);
+public class LongRangedShardingServiceTest {
+    private static final Logger log = LoggerFactory.getLogger(LongRangedShardingServiceTest.class);
 
     @Test
     public void getByKey() {
@@ -39,17 +39,15 @@ public class VirtualNodeShardingServiceTest {
             ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
         );
 
-        Ring ring = new Ring(128); // must be enough buckets to spread a data evenly
-
-        HashShardingService shardingService = new VirtualNodeShardingService(serverStorage, ring);
+        RangedShardingService shardingService = new LongRangedShardingService(serverStorage, Range.closed(0L, Long.MAX_VALUE));
 
         Map<ServerNode, AtomicInteger> distribution = new HashMap<>();
         for (int i = 0; i < 1024 * 1024; i++) {
-            ServerNode serverNode = shardingService.getNodeByKey(String.valueOf(i));
+            ServerNode serverNode = shardingService.getNodeByKey((long) i);
             distribution.putIfAbsent(serverNode, new AtomicInteger());
             distribution.get(serverNode).incrementAndGet();
         }
 
-        log.info("{}", distribution);
+        log.info("{}", distribution); // all keys are mapped to a single server :-(
     }
 }

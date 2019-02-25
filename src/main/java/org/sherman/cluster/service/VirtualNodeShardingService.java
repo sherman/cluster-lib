@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class VirtualNodeShardingService implements ShardingService {
+public class VirtualNodeShardingService implements HashShardingService {
     private final Ring ring;
     private final ServerStorage serverStorage;
 
@@ -66,6 +66,7 @@ public class VirtualNodeShardingService implements ShardingService {
         return getNodeByKey(key.getBytes());
     }
 
+    @NotNull
     @Override
     public ServerNode getNodeByKey(@NotNull byte[] key) {
         VirtualNode node = ring.getByKey(key);
