@@ -42,17 +42,18 @@ public class LongRangedShardingService implements RangedShardingService<Long> {
     }
 
     private void init() {
-        Long bound = closedRange.upperEndpoint() / (serverStorage.getServers().size() / 2);
+        Long bound = closedRange.upperEndpoint() / serverStorage.getServers().size();
 
         log.info("Size: {}", bound);
 
         long init = closedRange.lowerEndpoint();
 
         for (int i = 0; i < serverStorage.getServers().size(); i++) {
-            log.info("{} {}", init, init + bound);
             ServerNode serverNode = serverStorage.getServers().get(i);
-            Range<Long> range = Range.closed(init, init + bound);
+            Range<Long> range = Range.closed(init, i == serverStorage.getServers().size() - 1 ? closedRange.upperEndpoint() : init + bound);
             rangesToServerNodes.put(range, serverNode);
+
+            log.info("{} {}", range.lowerEndpoint(), range.upperEndpoint());
 
             init = init + bound + 1;
         }

@@ -28,22 +28,44 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class LongRangedShardingServiceTest {
     private static final Logger log = LoggerFactory.getLogger(LongRangedShardingServiceTest.class);
 
     @Test
-    public void getByKey() {
+    public void getByKeyBadExample() {
         ServerStorage serverStorage = new ServerStorageImpl(
             ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
         );
 
-        RangedShardingService shardingService = new LongRangedShardingService(serverStorage, Range.closed(0L, Long.MAX_VALUE));
+        RangedShardingService<Long> shardingService = new LongRangedShardingService(serverStorage, Range.closed(0L, Long.MAX_VALUE));
 
         Map<ServerNode, AtomicInteger> distribution = new HashMap<>();
         for (int i = 0; i < 1024 * 1024; i++) {
             ServerNode serverNode = shardingService.getNodeByKey((long) i);
+            distribution.putIfAbsent(serverNode, new AtomicInteger());
+            distribution.get(serverNode).incrementAndGet();
+        }
+
+        log.info("{}", distribution); // all keys are mapped to a single server :-(
+    }
+
+    @Test
+    public void getByKeyGoodExample() {
+        ServerStorage serverStorage = new ServerStorageImpl(
+            ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
+        );
+
+        RangedShardingService<Long> shardingService = new LongRangedShardingService(serverStorage, Range.closed(0L, Long.MAX_VALUE));
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        Map<ServerNode, AtomicInteger> distribution = new HashMap<>();
+        for (int i = 0; i < 1024 * 1024; i++) {
+            ServerNode serverNode = shardingService.getNodeByKey(random.nextLong(0, Long.MAX_VALUE));
             distribution.putIfAbsent(serverNode, new AtomicInteger());
             distribution.get(serverNode).incrementAndGet();
         }
