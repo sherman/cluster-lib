@@ -9,27 +9,27 @@ import org.testng.annotations.Test;
 
 /**
  * @author Denis M. Gabaydulin
- * @since 04.03.19
+ * @since 08.03.19
  */
-public class HbaseStyleStorageTest {
-    private static final Logger log = LoggerFactory.getLogger(HbaseStyleStorageTest.class);
+public class CassandraLikeStorageTest {
+    private static final Logger log = LoggerFactory.getLogger(CassandraLikeStorageTest.class);
 
     @Test
-    public void splitExample() {
+    public void initialTokenGeneration() {
         ServerStorage serverStorage = new ServerStorageImpl(
             ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
         );
 
-        HbaseStyleStorage<Long> hbaseStorage = new HbaseStyleStorageImpl(serverStorage, Range.closed(0L, Long.MAX_VALUE), 1024);
+        CassandraLikeStorage<Long> storage = new CassandraLikeStorageImpl(serverStorage, Range.closed(Long.MIN_VALUE, Long.MAX_VALUE), 256);
 
         for (int i = 0; i < 1024 * 1024; i++) {
-            hbaseStorage.putKey((long) i);
+            storage.putKey(String.valueOf(i));
 
             if (i % 1024 == 0) {
-                log.info("{}", hbaseStorage.getDistribution());
+                log.info("{}", storage.getDistribution());
             }
         }
 
-        log.info("{}", hbaseStorage.getDistribution());
+        log.info("{}", storage.getDistribution());
     }
 }
