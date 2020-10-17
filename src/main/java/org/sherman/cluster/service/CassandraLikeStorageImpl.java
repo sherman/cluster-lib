@@ -1,20 +1,30 @@
 package org.sherman.cluster.service;
 
+import java.util.AbstractMap;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
-import com.sun.security.ntlm.Server;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.TreeRangeSet;
 import org.jetbrains.annotations.NotNull;
 import org.sherman.cluster.domain.ServerNode;
 import org.sherman.cluster.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 /**
  * @author Denis M. Gabaydulin
@@ -127,8 +137,12 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             ServerNodeWithToken that = (ServerNodeWithToken) o;
             return token == that.token &&
                 Objects.equal(serverNode, that.serverNode);
