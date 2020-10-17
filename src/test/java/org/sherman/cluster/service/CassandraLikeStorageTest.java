@@ -15,6 +15,15 @@ public class CassandraLikeStorageTest {
     private static final Logger log = LoggerFactory.getLogger(CassandraLikeStorageTest.class);
 
     @Test
+    public void smallTokenNumber() {
+        ServerStorage serverStorage = new ServerStorageImpl(
+            ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
+        );
+
+        CassandraLikeStorage<Long> storage = new CassandraLikeStorageImpl(serverStorage, Range.closed(0L, 100L), 4);
+    }
+
+    @Test
     public void initialTokenGeneration() {
         ServerStorage serverStorage = new ServerStorageImpl(
             ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
