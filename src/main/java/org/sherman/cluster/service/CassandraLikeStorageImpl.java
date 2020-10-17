@@ -57,10 +57,14 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
         for (ServerNode serverNode : serverStorage.getServers()) {
             Set<Long> tokens = generateTokens();
 
+            log.info("Tokens: [{}]", tokens);
+
             tokens.forEach(t -> serversWithTokens.add(new ServerNodeWithToken(serverNode, t)));
 
             nodesToRanges.put(serverNode, TreeRangeSet.create());
         }
+
+        log.info("Servers with tokens: [{}]", serversWithTokens);
 
         Long prevToken = null;
         for (ServerNodeWithToken serverNodeWithToken : serversWithTokens) {
