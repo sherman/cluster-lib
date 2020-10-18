@@ -16,4 +16,8 @@ public interface CassandraLikeStorage<T extends Comparable<T>> {
     ServerNode getServerNodeByKey(@NotNull String key);
 
     Map<ServerNode, Integer> getDistribution();
+
+    void addServer(ServerNode serverNode);
+
+    Map<ServerNode, Long> getRangeDistribution();
 }

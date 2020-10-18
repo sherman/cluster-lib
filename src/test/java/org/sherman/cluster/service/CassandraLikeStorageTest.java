@@ -41,4 +41,30 @@ public class CassandraLikeStorageTest {
 
         log.info("{}", storage.getDistribution());
     }
+
+    @Test
+    public void rebalance() {
+        ServerStorage serverStorage = new ServerStorageImpl(
+            ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
+        );
+
+        CassandraLikeStorage<Long> storage = new CassandraLikeStorageImpl(serverStorage, Range.closed(Long.MIN_VALUE, Long.MAX_VALUE), 256);
+        //CassandraLikeStorage<Long> storage = new CassandraLikeStorageImpl(serverStorage, Range.closed(0L, 1000000L), 16);
+
+        log.info("Ranges per node: {}", storage.getRangeDistribution());
+
+        storage.addServer(new ServerNode("4", "192.168.5.4"));
+
+        log.info("Ranges per node: {}", storage.getRangeDistribution());
+
+        for (int i = 0; i < 1024 * 1024; i++) {
+            storage.putKey(String.valueOf(i));
+
+            if (i % 1024 == 0) {
+                log.info("{}", storage.getDistribution());
+            }
+        }
+
+        log.info("{}", storage.getDistribution());
+    }
 }
