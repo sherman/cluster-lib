@@ -129,4 +129,28 @@ public class ReplicaDistributionServiceTest {
             )
         );
     }
+
+    @Test
+    public void case8() {
+        ReplicaDistributionService distributionService = new ReplicaDistributionServiceImpl();
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6),
+                    2,
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(2, 1))
+                .put(1, ImmutableList.of(4, 3))
+                .put(2, ImmutableList.of(6, 5))
+                .put(3, ImmutableList.of(0, 1))
+                .put(4, ImmutableList.of(2, 3))
+                .put(5, ImmutableList.of(4, 5))
+                .put(6, ImmutableList.of(0, 6))
+                .build()
+        );
+    }
 }
