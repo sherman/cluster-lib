@@ -172,4 +172,27 @@ public class ReplicaDistributionServiceV2Test {
                 .build()
         );
     }
+
+    /**
+     * case 9 with removed node 3.
+     */
+    @Test
+    public void case10() {
+        ReplicaDistributionService distributionService = new ReplicaDistributionServiceImplV2();
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 4, 5, 6),
+                    2,
+                    ImmutableList.of(0, 1, 2)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(0, 4, 2, 6))
+                .put(1, ImmutableList.of(1, 5, 0, 4))
+                .put(2, ImmutableList.of(2, 6, 1, 5))
+                .build()
+        );
+    }
 }
