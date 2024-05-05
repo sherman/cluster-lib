@@ -6,11 +6,13 @@ import java.util.List;
 public class ReplicaDistribution {
     private final List<Integer> shards;
     private final int replicas;
+    private final List<Integer> prevNodes;
     private final List<Integer> nodes;
 
-    public ReplicaDistribution(List<Integer> shards, int replicas, List<Integer> nodes) {
+    public ReplicaDistribution(List<Integer> shards, int replicas, List<Integer> prevNodes, List<Integer> nodes) {
         this.shards = shards;
         this.replicas = replicas;
+        this.prevNodes = prevNodes;
         this.nodes = nodes;
     }
 
@@ -26,6 +28,10 @@ public class ReplicaDistribution {
         return nodes;
     }
 
+    public List<Integer> getPrevNodes() {
+        return prevNodes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -36,11 +42,11 @@ public class ReplicaDistribution {
         }
         ReplicaDistribution that = (ReplicaDistribution) o;
         return replicas == that.replicas && Objects.equal(shards, that.shards) &&
-            Objects.equal(nodes, that.nodes);
+            Objects.equal(prevNodes, that.prevNodes) && Objects.equal(nodes, that.nodes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(shards, replicas, nodes);
+        return Objects.hashCode(shards, replicas, prevNodes, nodes);
     }
 }

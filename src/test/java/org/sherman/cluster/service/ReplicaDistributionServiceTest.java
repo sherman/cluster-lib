@@ -17,6 +17,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -38,6 +39,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -59,6 +61,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2),
                     5,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6)
                 )
             ),
@@ -83,6 +86,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0),
                     1,
+                    ImmutableList.of(),
                     ImmutableList.of(0)
                 )
             ),
@@ -99,6 +103,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1)
                 )
             ),
@@ -118,6 +123,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     3,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -139,6 +145,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6)
                 )
             ),
@@ -163,6 +170,7 @@ public class ReplicaDistributionServiceTest {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2)
                 )
             ),

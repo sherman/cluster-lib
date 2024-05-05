@@ -16,6 +16,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -37,6 +38,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -58,6 +60,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2),
                     5,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6)
                 )
             ),
@@ -82,6 +85,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0),
                     1,
+                    ImmutableList.of(),
                     ImmutableList.of(0)
                 )
             ),
@@ -98,6 +102,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1)
                 )
             ),
@@ -117,6 +122,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1),
                     3,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3)
                 )
             ),
@@ -138,6 +144,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6)
                 )
             ),
@@ -162,6 +169,7 @@ public class ReplicaDistributionServiceV2Test {
                 new ReplicaDistribution(
                     ImmutableList.of(0, 1, 2, 3, 4, 5, 6),
                     2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2)
                 )
             ),
@@ -174,7 +182,7 @@ public class ReplicaDistributionServiceV2Test {
     }
 
     /**
-     * case 9 with removed node 3.
+     * Remove one node.
      */
     @Test
     public void case10() {
@@ -183,15 +191,98 @@ public class ReplicaDistributionServiceV2Test {
         Assert.assertEquals(
             distributionService.distribute(
                 new ReplicaDistribution(
-                    ImmutableList.of(0, 1, 2, 4, 5, 6),
+                    ImmutableList.of(0, 1, 2, 4),
                     2,
+                    ImmutableList.of(),
+                    ImmutableList.of(0, 1, 2, 3)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(0, 4))
+                .put(1, ImmutableList.of(1, 0))
+                .put(2, ImmutableList.of(2, 1))
+                .put(3, ImmutableList.of(4, 2))
+                .build()
+        );
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 4),
+                    2,
+                    ImmutableList.of(),
                     ImmutableList.of(0, 1, 2)
                 )
             ),
             new ImmutableMap.Builder<>()
-                .put(0, ImmutableList.of(0, 4, 2, 6))
-                .put(1, ImmutableList.of(1, 5, 0, 4))
-                .put(2, ImmutableList.of(2, 6, 1, 5))
+                .put(0, ImmutableList.of(0, 4, 2))
+                .put(1, ImmutableList.of(1, 0, 4))
+                .put(2, ImmutableList.of(2, 1))
+                .build()
+        );
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void case11() {
+        ReplicaDistributionService distributionService = new ReplicaDistributionServiceImplV2();
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7),
+                    4,
+                    ImmutableList.of(),
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(0, 7))
+                .put(1, ImmutableList.of(1, 0))
+                .put(2, ImmutableList.of(2, 1))
+                .put(3, ImmutableList.of(3, 2))
+                .put(4, ImmutableList.of(4, 3))
+                .put(5, ImmutableList.of(5, 4))
+                .put(6, ImmutableList.of(6, 5))
+                .put(7, ImmutableList.of(7, 6))
+                .put(8, ImmutableList.of(0, 7))
+                .put(9, ImmutableList.of(1, 0))
+                .put(10, ImmutableList.of(2, 1))
+                .put(11, ImmutableList.of(3, 2))
+                .put(12, ImmutableList.of(4, 3))
+                .put(13, ImmutableList.of(5, 4))
+                .put(14, ImmutableList.of(6, 5))
+                .put(15, ImmutableList.of(7, 6))
+                .build()
+        );
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7),
+                    4,
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(0, 7))
+                .put(1, ImmutableList.of(1, 0))
+                .put(2, ImmutableList.of(2, 1, 0))
+                .put(3, ImmutableList.of(3, 2, 1))
+                .put(4, ImmutableList.of(4, 3))
+                .put(5, ImmutableList.of(5, 4))
+                .put(6, ImmutableList.of(6, 5))
+                .put(7, ImmutableList.of(7, 6))
+                .put(8, ImmutableList.of(0, 7))
+                .put(10, ImmutableList.of(2, 1))
+                .put(11, ImmutableList.of(3, 2))
+                .put(12, ImmutableList.of(4, 3))
+                .put(13, ImmutableList.of(5, 4))
+                .put(14, ImmutableList.of(6, 5))
+                .put(15, ImmutableList.of(7, 6))
                 .build()
         );
     }
