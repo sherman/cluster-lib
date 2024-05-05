@@ -223,7 +223,7 @@ public class ReplicaDistributionServiceV2Test {
     }
 
     /**
-     *
+     * Remove node 9, only two nodes are re-balancing.
      */
     @Test
     public void case11() {

@@ -107,7 +107,7 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
                     int replicas = shardsToReplicas.getOrDefault(shard, 0);
                     shardsToReplicas.put(shard, replicas + 1);
                     total++;
-                    //Preconditions.checkArgument(shardsToReplicas.get(shard) <= parameters.getReplicas());
+                    Preconditions.checkArgument(shardsToReplicas.get(shard) <= parameters.getReplicas());
                 }
             }
         }
