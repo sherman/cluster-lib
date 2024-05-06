@@ -268,10 +268,10 @@ public class ReplicaDistributionServiceV2Test {
                 )
             ),
             new ImmutableMap.Builder<>()
-                .put(0, ImmutableList.of(0, 7))
-                .put(1, ImmutableList.of(1, 0))
-                .put(2, ImmutableList.of(2, 1, 0))
-                .put(3, ImmutableList.of(3, 2, 1))
+                .put(0, ImmutableList.of(0, 7, 6))
+                .put(1, ImmutableList.of(1, 0, 7))
+                .put(2, ImmutableList.of(2, 1))
+                .put(3, ImmutableList.of(3, 2))
                 .put(4, ImmutableList.of(4, 3))
                 .put(5, ImmutableList.of(5, 4))
                 .put(6, ImmutableList.of(6, 5))
@@ -282,7 +282,36 @@ public class ReplicaDistributionServiceV2Test {
                 .put(12, ImmutableList.of(4, 3))
                 .put(13, ImmutableList.of(5, 4))
                 .put(14, ImmutableList.of(6, 5))
-                .put(15, ImmutableList.of(7, 6))
+                .put(15, ImmutableList.of(1, 0))
+                .build()
+        );
+
+        Assert.assertEquals(
+            distributionService.distribute(
+                new ReplicaDistribution(
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7),
+                    4,
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 15, 10, 11, 12, 13, 14),
+                    ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 15, 10, 11, 12, 13, 14, 16)
+                )
+            ),
+            new ImmutableMap.Builder<>()
+                .put(0, ImmutableList.of(0, 7))
+                .put(1, ImmutableList.of(1, 0))
+                .put(2, ImmutableList.of(2, 1))
+                .put(3, ImmutableList.of(3, 2))
+                .put(4, ImmutableList.of(4, 3))
+                .put(5, ImmutableList.of(5, 4))
+                .put(6, ImmutableList.of(6, 5))
+                .put(7, ImmutableList.of(7, 6))
+                .put(8, ImmutableList.of(0, 7))
+                .put(10, ImmutableList.of(2, 1))
+                .put(11, ImmutableList.of(3, 2))
+                .put(12, ImmutableList.of(4, 3))
+                .put(13, ImmutableList.of(5, 4))
+                .put(14, ImmutableList.of(6, 5))
+                .put(15, ImmutableList.of(1, 0))
+                .put(16, ImmutableList.of(7, 6))
                 .build()
         );
     }

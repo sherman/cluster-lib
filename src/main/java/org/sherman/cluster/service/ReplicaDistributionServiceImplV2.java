@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.sherman.cluster.domain.ReplicaDistribution;
+import org.sherman.cluster.util.ListUtils;
 import org.sherman.cluster.util.PermutationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +21,42 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
 
     @Override
     public Map<Integer, List<Integer>> distribute(ReplicaDistribution parameters) {
-        List<Integer> actualNodes = parameters.getPrevNodes().isEmpty() ? parameters.getNodes() : parameters.getPrevNodes();
-        List<Integer> removedNodes = new ArrayList<>();
-        for (int prevNode : parameters.getPrevNodes()) {
-            if (!parameters.getNodes().contains(prevNode)) {
-                removedNodes.add(prevNode);
+        List<Integer> actual = new ArrayList<>();
+        if (!parameters.getPrevNodes().isEmpty()) {
+            // handle removed nodes
+            List<Integer> removed = ListUtils.getRemoved(parameters.getPrevNodes(), parameters.getNodes());
+            Set<Integer> moved = new HashSet<>();
+            Deque<Integer> newList = new ArrayDeque<>(parameters.getNodes());
+            for (int node : parameters.getPrevNodes()) {
+                if (removed.contains(node)) {
+                    while (!newList.isEmpty()) {
+                        int lastNode = newList.removeLast();
+                        if (!moved.contains(lastNode)) {
+                            actual.add(lastNode);
+                            moved.add(lastNode);
+                            break;
+                        }
+                    }
+                } else {
+                    if (!moved.contains(node)) {
+                        actual.add(node);
+                    }
+                }
             }
+
+            // handle added nodes
+            for (int node : parameters.getNodes()) {
+                if (!actual.contains(node)) {
+                    actual.add(node);
+                }
+            }
+        } else {
+            actual = parameters.getNodes();
         }
 
-        Deque<Integer> nodes = new ArrayDeque<>(actualNodes);
+        logger.info("Actual list: [{}]", actual);
+
+        Deque<Integer> nodes = new ArrayDeque<>(actual);
         int total = 0;
         Map<Integer, Integer> shardsToReplicas = new HashMap<>();
         Iterator<Integer> nodeIterator = nodes.iterator();
@@ -59,56 +87,6 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
                 shardsToReplicas.put(shard, replicas + 1);
                 total++;
                 Preconditions.checkArgument(shardsToReplicas.get(shard) <= parameters.getReplicas());
-            }
-        }
-
-        Set<Integer> shardsToSpread = new HashSet<>();
-        int moreReplicas = 0;
-        for (int removedNode : removedNodes) {
-            if (result.containsKey(removedNode)) {
-                List<Integer> shards = result.remove(removedNode);
-                moreReplicas += shards.size();
-
-                for (int shard : shards) {
-                    Integer count = shardsToReplicas.get(shard);
-                    if (count != null && count > 0) {
-                        shardsToReplicas.put(shard, count - 1);
-                    }
-                    shardsToSpread.add(shard);
-                }
-            }
-        }
-
-        logger.info("More replicas to spread: [{}]", moreReplicas);
-
-        if (moreReplicas > 0) {
-            nodes = new ArrayDeque<>(parameters.getNodes());
-            nodeIterator = nodes.iterator();
-            total = 0;
-            while (total < moreReplicas) {
-                for (int shard : shardsToSpread) {
-                    // get appropriate node
-                    while (true) {
-                        int node;
-                        if (nodeIterator.hasNext()) {
-                            node = nodeIterator.next();
-                        } else {
-                            nodeIterator = nodes.iterator();
-                            node = nodeIterator.next();
-                        }
-
-                        List<Integer> shards = result.computeIfAbsent(node, ignored -> new ArrayList<>());
-                        if (!shards.contains(shard)) {
-                            shards.add(shard);
-                            break;
-                        }
-                    }
-
-                    int replicas = shardsToReplicas.getOrDefault(shard, 0);
-                    shardsToReplicas.put(shard, replicas + 1);
-                    total++;
-                    Preconditions.checkArgument(shardsToReplicas.get(shard) <= parameters.getReplicas());
-                }
             }
         }
 
