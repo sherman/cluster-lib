@@ -5,8 +5,9 @@ import java.util.Map;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
 import org.sherman.cluster.domain.ReplicaDistribution;
+import org.sherman.cluster.domain.RoleAwareJob;
 
 public interface LeaderReplicaDistributionService {
 
-    Map<Integer, List<Job>> distribute(LeaderReplicaDistribution parameters);
+    Map<Integer, List<RoleAwareJob>> distribute(LeaderReplicaDistribution parameters);
 }

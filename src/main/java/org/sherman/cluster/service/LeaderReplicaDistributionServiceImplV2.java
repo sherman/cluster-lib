@@ -10,6 +10,7 @@ import java.util.Map;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.Jobs;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
+import org.sherman.cluster.domain.RoleAwareJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
     private static final Logger logger = LoggerFactory.getLogger(LeaderReplicaDistributionServiceImplV2.class);
 
     @Override
-    public Map<Integer, List<Job>> distribute(LeaderReplicaDistribution parameters) {
+    public Map<Integer, List<RoleAwareJob>> distribute(LeaderReplicaDistribution parameters) {
         var totalCpusAvailable = parameters.totalCpus();
         var totalCpusRequired = parameters.getJobs().stream().mapToInt(Job::getCpus).sum() * parameters.getReplicas();
         if (totalCpusAvailable < totalCpusRequired) {
@@ -48,7 +49,7 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
                 .collect(ImmutableList.toImmutableList());
 
             for (var node : nodesSortedByCpu) {
-                nodesToJobs.get(node).addJob(job);
+                nodesToJobs.get(node).addLeader(job);
                 var current = cpuPerNodes.get(node);
                 cpuPerNodes.put(node, current + job.getCpus());
                 break;
@@ -63,8 +64,8 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
                 .collect(ImmutableList.toImmutableList());
 
             for (var node : nodesSortedByCpu) {
-                if (!nodesToJobs.get(node).getJobs().contains(job)) {
-                    nodesToJobs.get(node).addJob(job);
+                if (!nodesToJobs.get(node).contains(job)) {
+                    nodesToJobs.get(node).addStandby(job);
                     var current = cpuPerNodes.get(node);
                     cpuPerNodes.put(node, current + job.getCpus());
                     break;

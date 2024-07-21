@@ -9,6 +9,7 @@ import java.util.Map;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.Jobs;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
+import org.sherman.cluster.domain.RoleAwareJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
     private static final Logger logger = LoggerFactory.getLogger(LeaderReplicaDistributionServiceImpl.class);
 
     @Override
-    public Map<Integer, List<Job>> distribute(LeaderReplicaDistribution parameters) {
+    public Map<Integer, List<RoleAwareJob>> distribute(LeaderReplicaDistribution parameters) {
         var totalCpusAvailable = parameters.totalCpus();
         var totalCpusRequired = parameters.getJobs().stream().mapToInt(Job::getCpus).sum() * parameters.getReplicas();
         if (totalCpusAvailable < totalCpusRequired) {
@@ -26,6 +27,11 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
         var nodesToJobs = new HashMap<Integer, Jobs>();
         for (var node : parameters.getNodes()) {
             nodesToJobs.put(node, new Jobs(0, new LinkedHashSet<>()));
+        }
+
+        var jobsToLeaders = new HashMap<Job, Boolean>();
+        for (var job : parameters.getJobs()) {
+            jobsToLeaders.put(job, false);
         }
 
         var total = 0;
@@ -41,8 +47,13 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
 
                 // get appropriate node
                 for (var nodeWithJobs : sortedNodes) {
-                    if (!nodeWithJobs.getValue().getJobs().contains(job)) {
-                        nodeWithJobs.getValue().addJob(job);
+                    if (!nodeWithJobs.getValue().contains(job)) {
+                        if (!jobsToLeaders.get(job)) {
+                            nodeWithJobs.getValue().addLeader(job);
+                            jobsToLeaders.put(job, true);
+                        } else {
+                            nodeWithJobs.getValue().addStandby(job);
+                        }
                         break;
                     }
                 }

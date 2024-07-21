@@ -7,9 +7,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class Jobs implements Comparable<Jobs> {
     private int totalCpus;
-    private final Set<Job> jobs;
+    private final Set<RoleAwareJob> jobs;
 
-    public Jobs(int totalCpus, Set<Job> jobs) {
+    public Jobs(int totalCpus, Set<RoleAwareJob> jobs) {
         this.totalCpus = totalCpus;
         this.jobs = jobs;
     }
@@ -18,7 +18,7 @@ public class Jobs implements Comparable<Jobs> {
         return totalCpus;
     }
 
-    public Set<Job> getJobs() {
+    public Set<RoleAwareJob> getJobs() {
         return jobs;
     }
 
@@ -52,8 +52,17 @@ public class Jobs implements Comparable<Jobs> {
         return this.totalCpus - job.totalCpus;
     }
 
-    public void addJob(Job job) {
+    public boolean contains(Job job) {
+        return jobs.stream().map(RoleAwareJob::getJob).anyMatch(_job -> _job.equals(job));
+    }
+
+    public void addLeader(Job job) {
         totalCpus += job.getCpus();
-        jobs.add(job);
+        jobs.add(new RoleAwareJob(Role.LEADER, job));
+    }
+
+    public void addStandby(Job job) {
+        totalCpus += job.getCpus();
+        jobs.add(new RoleAwareJob(Role.STANDBY, job));
     }
 }
