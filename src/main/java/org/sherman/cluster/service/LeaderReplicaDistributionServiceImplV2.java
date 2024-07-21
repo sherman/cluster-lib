@@ -72,6 +72,8 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
             }
         }
 
+        logger.info("Total cpu per node: [{}]", cpuPerNodes);
+
         return nodesToJobs.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
