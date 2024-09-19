@@ -27,7 +27,10 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
 
         // firstly, sort all jobs by cpu in the descending order
         var jobs = parameters.getJobs().stream()
-            .sorted(Comparator.comparing(Job::getCpus).reversed())
+            .sorted(
+                Comparator.comparing(Job::getCpus).reversed()
+                    .thenComparing(Job::getId)
+            )
             .collect(ImmutableList.toImmutableList());
 
         // track used cpu per node

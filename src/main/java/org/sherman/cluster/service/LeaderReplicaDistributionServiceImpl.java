@@ -24,6 +24,11 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
             logger.error("Not enough cpus, required: [{}], available: [{}]", totalCpusRequired, totalCpusAvailable);
         }
 
+        var cpuPerNodes = new HashMap<Integer, Integer>();
+        for (var node : parameters.getNodes()) {
+            cpuPerNodes.put(node, 0);
+        }
+
         var nodesToJobs = new HashMap<Integer, Jobs>();
         for (var node : parameters.getNodes()) {
             nodesToJobs.put(node, new Jobs(0, new LinkedHashSet<>()));
@@ -54,6 +59,8 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
                         } else {
                             nodeWithJobs.getValue().addStandby(job);
                         }
+                        var current = cpuPerNodes.get(nodeWithJobs.getKey());
+                        cpuPerNodes.put(nodeWithJobs.getKey(), current + job.getCpus());
                         break;
                     }
                 }
@@ -61,6 +68,8 @@ public class LeaderReplicaDistributionServiceImpl implements LeaderReplicaDistri
                 total++;
             }
         }
+
+        logger.info("Total cpu per node: [{}]", cpuPerNodes);
 
         return nodesToJobs.entrySet().stream()
             .collect(
