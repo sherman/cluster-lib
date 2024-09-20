@@ -22,6 +22,10 @@ public class Client {
         sessionId++;
     }
 
+    public void updateTs(long newTs) {
+        clock.tick(newTs);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

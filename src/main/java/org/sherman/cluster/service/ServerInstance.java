@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.sherman.cluster.domain.Client;
 import org.sherman.cluster.domain.Server;
 import org.sherman.cluster.domain.StateMessage;
 import org.sherman.cluster.domain.VersionedData;
@@ -20,11 +21,12 @@ public class ServerInstance {
         this.server = server;
     }
 
-    public void receiveData(int client, StateMessage message) {
+    public void receiveData(Client client, StateMessage message) {
         var newTs = server.tick(message.getTs());
         logger.info("Ts: [{}] for server: [{}], msg: [{}]", newTs, server.getId(), client + ":" + message);
-        var clientMessages = messages.computeIfAbsent(client, ignored -> new CopyOnWriteArrayList<>());
+        var clientMessages = messages.computeIfAbsent(client.getId(), ignored -> new CopyOnWriteArrayList<>());
         clientMessages.add(new VersionedData(message.getSessionId(), newTs, message.getData()));
+        client.updateTs(newTs);
     }
 
     public List<VersionedData> getMessagesByClient(int clientId) {
