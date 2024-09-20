@@ -32,4 +32,8 @@ public class ServerInstance {
     public List<VersionedData> getMessagesByClient(int clientId) {
         return messages.get(clientId);
     }
+
+    public void restart() {
+        server.restart();
+    }
 }

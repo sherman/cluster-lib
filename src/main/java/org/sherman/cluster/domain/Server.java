@@ -11,6 +11,10 @@ public class Server {
         this.id = id;
     }
 
+    public void restart() {
+        clock.restart();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
