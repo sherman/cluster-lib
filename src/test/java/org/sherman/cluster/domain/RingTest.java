@@ -27,19 +27,19 @@ import static org.testng.Assert.assertEquals;
 public class RingTest {
     @Test
     public void getByToken() {
-        Ring ring = new Ring(32768);
+        var ring = new Ring(32768);
         assertEquals(ring.getByToken(42L).getRange(), Range.closed(0L, 562949953421311L));
     }
 
     @Test
     public void singleRange() {
-        Ring ring = new Ring(1);
+        var ring = new Ring(1);
         assertEquals(ring.getByToken(42L).getRange(), Range.closed(Long.MIN_VALUE, Long.MAX_VALUE));
     }
 
     @Test
     public void twoRanges() {
-        Ring ring = new Ring(2);
+        var ring = new Ring(2);
         assertEquals(ring.getByToken(42L).getRange(), Range.closed(0L, 9223372036854775807L));
     }
 }
