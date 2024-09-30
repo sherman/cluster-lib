@@ -3,13 +3,10 @@ package org.sherman.cluster.service;
 import static org.sherman.cluster.domain.Role.LEADER;
 import static org.sherman.cluster.domain.Role.STANDBY;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
-import org.sherman.cluster.domain.Role;
 import org.sherman.cluster.domain.RoleAwareJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,59 +322,57 @@ public class LeaderReplicaDistributionServiceV2Test {
             Map.of(
                 0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_1", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_3", 40))
+                    new RoleAwareJob(LEADER, new Job("index_1_6", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_2_7", 40))
                 ),
                 1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_2", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_4", 40))
+                    new RoleAwareJob(LEADER, new Job("index_1_7", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_2_8", 40))
                 ),
                 2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_3", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_5", 40))
+                    new RoleAwareJob(LEADER, new Job("index_1_8", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_3_1", 10)),
+                    new RoleAwareJob(STANDBY, new Job("index_3_2", 10)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_1", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_2", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_3", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_4", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_5", 4))
                 ),
                 3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_4", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_6", 40))
+                    new RoleAwareJob(STANDBY, new Job("index_2_1", 40)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_6", 4))
                 ),
                 4, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_5", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_7", 40))
+                    new RoleAwareJob(STANDBY, new Job("index_2_2", 40)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_7", 4))
                 ),
                 5, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_6", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_8", 40))
+                    new RoleAwareJob(STANDBY, new Job("index_2_3", 40)),
+                    new RoleAwareJob(STANDBY, new Job("index_1_8", 4))
                 ),
                 6, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_7", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_3_1", 10)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_1", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_3", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_5", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_7", 4))
+                    new RoleAwareJob(STANDBY, new Job("index_2_4", 40))
                 ),
                 7, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_8", 40)),
-                    new RoleAwareJob(STANDBY, new Job("index_3_2", 10)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_2", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_4", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_6", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_1_8", 4))
+                    new RoleAwareJob(STANDBY, new Job("index_2_5", 40))
                 ),
                 8, List.of(
                     new RoleAwareJob(LEADER, new Job("index_3_1", 10)),
-                    new RoleAwareJob(LEADER, new Job("index_1_1", 4)),
-                    new RoleAwareJob(LEADER, new Job("index_1_3", 4)),
-                    new RoleAwareJob(LEADER, new Job("index_1_5", 4)),
-                    new RoleAwareJob(LEADER, new Job("index_1_7", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_1", 40))
-                ),
-                9, List.of(
                     new RoleAwareJob(LEADER, new Job("index_3_2", 10)),
+                    new RoleAwareJob(LEADER, new Job("index_1_1", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_2", 4)),
+                    new RoleAwareJob(LEADER, new Job("index_1_3", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_4", 4)),
-                    new RoleAwareJob(LEADER, new Job("index_1_6", 4)),
-                    new RoleAwareJob(LEADER, new Job("index_1_8", 4)),
-                    new RoleAwareJob(STANDBY, new Job("index_2_2", 40))
+                    new RoleAwareJob(LEADER, new Job("index_1_5", 4)),
+                    new RoleAwareJob(STANDBY, new Job("index_2_6", 40))
                 )
             )
         );
