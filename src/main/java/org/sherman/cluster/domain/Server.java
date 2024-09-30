@@ -3,6 +3,9 @@ package org.sherman.cluster.domain;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
+/**
+ * An identified server with the lamport clock inside.
+ */
 public class Server {
     private final int id;
     private final LamportClock clock = new LamportClock(1);

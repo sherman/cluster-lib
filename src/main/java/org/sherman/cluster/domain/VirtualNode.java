@@ -22,6 +22,9 @@ package org.sherman.cluster.domain;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Range;
 
+/**
+ * Represents an identified virtual node with a given range of long keys.
+ */
 public class VirtualNode {
     private final String id;
     private final Range<Long> range;
@@ -41,8 +44,12 @@ public class VirtualNode {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         VirtualNode that = (VirtualNode) o;
 

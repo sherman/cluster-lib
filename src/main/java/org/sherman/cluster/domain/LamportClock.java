@@ -1,5 +1,8 @@
 package org.sherman.cluster.domain;
 
+/**
+ * Very basic implementation of lamport clock to get a partial order of events in a distributed system.
+ */
 public class LamportClock {
     private long timestamp;
 

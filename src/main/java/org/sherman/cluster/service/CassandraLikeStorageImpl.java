@@ -117,6 +117,9 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    /**
+     * In case of re-balancing (e.g. add new node in a cluster) we should split all ranges by random points to move some data to a new node.
+     */
     @Override
     public void addServer(ServerNode serverNode) {
         // generate tokens for a new server

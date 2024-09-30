@@ -16,6 +16,10 @@ import org.sherman.cluster.util.PermutationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Distributes shards with the required number of replicas between a cluster of nodes.
+ * Trying to minimize the number of rebalanced shards when a set of nodes is changed.
+ */
 public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionService {
     private static final Logger logger = LoggerFactory.getLogger(ReplicaDistributionServiceImplV2.class);
 

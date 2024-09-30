@@ -3,6 +3,9 @@ package org.sherman.cluster.domain;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
+/**
+ * An identified client with the lamport clock inside.
+ */
 public class Client {
     private final int id;
     private int sessionId; // tie breaker

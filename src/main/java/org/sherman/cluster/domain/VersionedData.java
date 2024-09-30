@@ -3,6 +3,9 @@ package org.sherman.cluster.domain;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
+/**
+ * This class helps to resolve a problem with the lamport clock approach. {@code sessionId} is a tiebreaker in case when two events are not ordered (were concurrent).
+ */
 public class VersionedData {
     private final int sessionId;
     private final long ts;

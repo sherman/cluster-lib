@@ -97,6 +97,9 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
         rangesToServerNodes.put(right, node);
     }
 
+    /**
+     * When a range contains more than the maximum number of elements, we should split it into a couple of new ranges.
+     */
     @Override
     public void putKey(@NotNull Long key) {
         var keys = rangesToElements.get(key);
