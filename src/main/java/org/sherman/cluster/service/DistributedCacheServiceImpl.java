@@ -2,10 +2,14 @@ package org.sherman.cluster.service;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
+@SuppressWarnings("UnstableApiUsage")
 public class DistributedCacheServiceImpl implements DistributedCacheService {
     private final Map<Integer, LruCache> cache = new HashMap<>();
     private final HashFunction function = Hashing.murmur3_128();
@@ -13,15 +17,15 @@ public class DistributedCacheServiceImpl implements DistributedCacheService {
 
     public DistributedCacheServiceImpl(int maxServers, int maxPartitions) {
         this.maxPartitions = maxPartitions;
-        for (int server = 1; server <= maxServers; server++) {
+        for (var server = 1; server <= maxServers; server++) {
             cache.put(server, new LruCache(100));
         }
     }
 
     @Override
     public void cache(int serverId, String data, int partition) {
-        int hash = getHashKey(data);
-        LruCache serverCache = cache.get(serverId);
+        var hash = getHashKey(data);
+        var serverCache = cache.get(serverId);
         if (partition == -1 || hash % maxPartitions == partition) {
             serverCache.put(hash, data);
         }
@@ -29,9 +33,9 @@ public class DistributedCacheServiceImpl implements DistributedCacheService {
 
     @Override
     public float getPercentOfUnique() {
-        Set<Integer> uniqueItems = new HashSet<>();
-        float total = 0;
-        for (Map.Entry<Integer, LruCache> entry : cache.entrySet()) {
+        var uniqueItems = new HashSet<Integer>();
+        var total = 0.0f;
+        for (var entry : cache.entrySet()) {
             uniqueItems.addAll(entry.getValue().keySet());
             total += entry.getValue().size();
         }

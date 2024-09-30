@@ -3,7 +3,6 @@ package org.sherman.cluster.service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import org.sherman.cluster.domain.Client;
 import org.sherman.cluster.domain.Server;
 import org.sherman.cluster.domain.StateMessage;
@@ -17,10 +16,10 @@ public class LamportClockTest {
 
     @Test
     public void case1() {
-        ServerInstance serverInstance1 = new ServerInstance(new Server(1));
-        ServerInstance serverInstance2 = new ServerInstance(new Server(2));
-        Client client1 = new Client(1, 1);
-        Client client2 = new Client(1, 2);
+        var serverInstance1 = new ServerInstance(new Server(1));
+        var serverInstance2 = new ServerInstance(new Server(2));
+        var client1 = new Client(1, 1);
+        var client2 = new Client(1, 2);
 
         serverInstance1.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg11"));
         serverInstance2.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg12"));
@@ -32,9 +31,9 @@ public class LamportClockTest {
 
     @Test
     public void case2() {
-        ServerInstance serverInstance1 = new ServerInstance(new Server(1));
-        ServerInstance serverInstance2 = new ServerInstance(new Server(2));
-        Client client1 = new Client(1, 1);
+        var serverInstance1 = new ServerInstance(new Server(1));
+        var serverInstance2 = new ServerInstance(new Server(2));
+        var client1 = new Client(1, 1);
 
         serverInstance1.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg11"));
         serverInstance2.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg12"));
@@ -49,10 +48,10 @@ public class LamportClockTest {
 
     @Test
     public void case3() {
-        ServerInstance serverInstance1 = new ServerInstance(new Server(1));
-        ServerInstance serverInstance2 = new ServerInstance(new Server(2));
-        ServerInstance serverInstance3 = new ServerInstance(new Server(3));
-        Client client1 = new Client(1, 1);
+        var serverInstance1 = new ServerInstance(new Server(1));
+        var serverInstance2 = new ServerInstance(new Server(2));
+        var serverInstance3 = new ServerInstance(new Server(3));
+        var client1 = new Client(1, 1);
 
         serverInstance1.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg11"));
         serverInstance2.receiveData(client1, new StateMessage(client1.getSessionId(), client1.inc(), "msg12"));
@@ -77,20 +76,20 @@ public class LamportClockTest {
     }
 
     private static void printTotalOrder(List<Client> clients, List<ServerInstance> servers) {
-        for (Client client : clients) {
+        for (var client : clients) {
             logger.info("==========================================");
-            List<VersionedData> messages = new ArrayList<>();
-            for (ServerInstance serverInstance : servers) {
+            var messages = new ArrayList<VersionedData>();
+            for (var serverInstance : servers) {
                 messages.addAll(serverInstance.getMessagesByClient(client.getId()));
             }
 
-            List<VersionedData> sorted = messages.stream().sorted(
+            var sorted = messages.stream().sorted(
                 (o1, o2) -> Comparator.comparing(VersionedData::getSessionId)
                     .thenComparing(VersionedData::getTs)
                     .compare(o1, o2)
             ).toList();
 
-            for (VersionedData message : sorted) {
+            for (var message : sorted) {
                 logger.info("[{}]", message);
             }
         }

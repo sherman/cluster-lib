@@ -5,6 +5,8 @@ import static org.sherman.cluster.domain.Role.STANDBY;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import java.util.Map;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
 import org.sherman.cluster.domain.Role;
@@ -19,34 +21,34 @@ public class LeaderReplicaDistributionServiceV2Test {
 
     @Test
     public void case1() {
-        LeaderReplicaDistributionService distributionService = new LeaderReplicaDistributionServiceImplV2();
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
 
         Assert.assertEquals(
             distributionService.distribute(
                 new LeaderReplicaDistribution(
-                    ImmutableList.of(new Job("index_1", 40), new Job("index_2", 40)),
+                    List.of(new Job("index_1", 40), new Job("index_2", 40)),
                     2,
-                    ImmutableList.of(0, 1, 2, 3),
+                    List.of(0, 1, 2, 3),
                     90
                 )
             ),
-            ImmutableMap.of(
-                0, ImmutableList.of(new RoleAwareJob(LEADER, new Job("index_1", 40))),
-                1, ImmutableList.of(new RoleAwareJob(LEADER, new Job("index_2", 40))),
-                2, ImmutableList.of(new RoleAwareJob(STANDBY, new Job("index_1", 40))),
-                3, ImmutableList.of(new RoleAwareJob(STANDBY, new Job("index_2", 40)))
+            Map.of(
+                0, List.of(new RoleAwareJob(LEADER, new Job("index_1", 40))),
+                1, List.of(new RoleAwareJob(LEADER, new Job("index_2", 40))),
+                2, List.of(new RoleAwareJob(STANDBY, new Job("index_1", 40))),
+                3, List.of(new RoleAwareJob(STANDBY, new Job("index_2", 40)))
             )
         );
     }
 
     @Test
     public void case2() {
-        LeaderReplicaDistributionService distributionService = new LeaderReplicaDistributionServiceImplV2();
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
 
         Assert.assertEquals(
             distributionService.distribute(
                 new LeaderReplicaDistribution(
-                    ImmutableList.of(
+                    List.of(
                         new Job("index_1", 40),
                         new Job("index_2", 40),
                         new Job("index_3", 40),
@@ -54,26 +56,26 @@ public class LeaderReplicaDistributionServiceV2Test {
                         new Job("index_5", 10)
                     ),
                     2,
-                    ImmutableList.of(0, 1, 2, 3),
+                    List.of(0, 1, 2, 3),
                     90
                 )
             ),
-            ImmutableMap.of(
-                0, ImmutableList.of(
+            Map.of(
+                0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1", 40)),
                     new RoleAwareJob(LEADER, new Job("index_5", 10)),
                     new RoleAwareJob(STANDBY, new Job("index_4", 40))
                 ),
-                1, ImmutableList.of(
+                1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_5", 10))
                 ),
-                2, ImmutableList.of(
+                2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_3", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2", 40))
                 ),
-                3, ImmutableList.of(
+                3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_4", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_3", 40))
                 )
@@ -83,12 +85,12 @@ public class LeaderReplicaDistributionServiceV2Test {
 
     @Test
     public void case3() {
-        LeaderReplicaDistributionService distributionService = new LeaderReplicaDistributionServiceImplV2();
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
 
         Assert.assertEquals(
             distributionService.distribute(
                 new LeaderReplicaDistribution(
-                    ImmutableList.of(
+                    List.of(
                         new Job("index_1_1", 40),
                         new Job("index_1_2", 40),
                         new Job("index_1_3", 40),
@@ -101,18 +103,18 @@ public class LeaderReplicaDistributionServiceV2Test {
                         new Job("index_4", 4)
                     ),
                     2,
-                    ImmutableList.of(0, 1, 2, 3),
+                    List.of(0, 1, 2, 3),
                     90
                 )
             ),
-            ImmutableMap.of(
-                0, ImmutableList.of(
+            Map.of(
+                0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_1", 40)),
                     new RoleAwareJob(LEADER, new Job("index_2", 10)),
                     new RoleAwareJob(STANDBY, new Job("index_1_4", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_3_3", 4))
                 ),
-                1, ImmutableList.of(
+                1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_2", 40)),
                     new RoleAwareJob(LEADER, new Job("index_3_1", 4)),
                     new RoleAwareJob(LEADER, new Job("index_3_4", 4)),
@@ -120,7 +122,7 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new RoleAwareJob(STANDBY, new Job("index_3_2", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_4", 4))
                 ),
-                2, ImmutableList.of(
+                2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_3", 40)),
                     new RoleAwareJob(LEADER, new Job("index_3_2", 4)),
                     new RoleAwareJob(LEADER, new Job("index_4", 4)),
@@ -129,7 +131,7 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new RoleAwareJob(STANDBY, new Job("index_3_4", 4))
 
                 ),
-                3, ImmutableList.of(
+                3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_4", 40)),
                     new RoleAwareJob(LEADER, new Job("index_3_3", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_1", 40)),
@@ -141,12 +143,12 @@ public class LeaderReplicaDistributionServiceV2Test {
 
     @Test
     public void case4() {
-        LeaderReplicaDistributionService distributionService = new LeaderReplicaDistributionServiceImplV2();
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
 
         // first iteration, add 8-shard index
         var step1 = distributionService.distribute(
             new LeaderReplicaDistribution(
-                ImmutableList.of(
+                List.of(
                     new Job("index_1_1", 40),
                     new Job("index_1_2", 40),
                     new Job("index_1_3", 40),
@@ -157,49 +159,49 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new Job("index_1_8", 40)
                 ),
                 2,
-                ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+                List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                 90
             )
         );
 
         Assert.assertEquals(
             step1,
-            ImmutableMap.of(
-                0, ImmutableList.of(
+            Map.of(
+                0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_1", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_3", 40))
                 ),
-                1, ImmutableList.of(
+                1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_2", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_4", 40))
                 ),
-                2, ImmutableList.of(
+                2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_3", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_5", 40))
                 ),
-                3, ImmutableList.of(
+                3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_4", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_6", 40))
                 ),
-                4, ImmutableList.of(
+                4, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_5", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_7", 40))
                 ),
-                5, ImmutableList.of(
+                5, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_6", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_8", 40))
 
                 ),
-                6, ImmutableList.of(
+                6, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_7", 40))
                 ),
-                7, ImmutableList.of(
+                7, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_8", 40))
                 ),
-                8, ImmutableList.of(
+                8, List.of(
                     new RoleAwareJob(STANDBY, new Job("index_1_1", 40))
                 ),
-                9, ImmutableList.of(
+                9, List.of(
                     new RoleAwareJob(STANDBY, new Job("index_1_2", 40))
                 )
             )
@@ -207,7 +209,7 @@ public class LeaderReplicaDistributionServiceV2Test {
 
         var step2 = distributionService.distribute(
             new LeaderReplicaDistribution(
-                ImmutableList.of(
+                List.of(
                     new Job("index_1_1", 4),
                     new Job("index_1_2", 4),
                     new Job("index_1_3", 4),
@@ -226,61 +228,61 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new Job("index_2_8", 40)
                 ),
                 2,
-                ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+                List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                 90
             )
         );
 
         Assert.assertEquals(
             step2,
-            ImmutableMap.of(
-                0, ImmutableList.of(
+            Map.of(
+                0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_1", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_3", 40))
                 ),
-                1, ImmutableList.of(
+                1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_2", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_4", 40))
                 ),
-                2, ImmutableList.of(
+                2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_3", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_5", 40))
                 ),
-                3, ImmutableList.of(
+                3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_4", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_6", 40))
                 ),
-                4, ImmutableList.of(
+                4, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_5", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_7", 40))
                 ),
-                5, ImmutableList.of(
+                5, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_6", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_8", 40))
 
                 ),
-                6, ImmutableList.of(
+                6, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_7", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_1", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_3", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_5", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_7", 4))
                 ),
-                7, ImmutableList.of(
+                7, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_8", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_1_2", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_4", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_6", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_8", 4))
                 ),
-                8, ImmutableList.of(
+                8, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_1", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_3", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_5", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_7", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_2_1", 40))
                 ),
-                9, ImmutableList.of(
+                9, List.of(
                     new RoleAwareJob(LEADER, new Job("index_1_2", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_4", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_6", 4)),
@@ -292,7 +294,7 @@ public class LeaderReplicaDistributionServiceV2Test {
 
         var step3 = distributionService.distribute(
             new LeaderReplicaDistribution(
-                ImmutableList.of(
+                List.of(
                     new Job("index_1_1", 4),
                     new Job("index_1_2", 4),
                     new Job("index_1_3", 4),
@@ -313,39 +315,39 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new Job("index_3_2", 10)
                 ),
                 2,
-                ImmutableList.of(0, 1, 2, 3, 4, 5, 6, 7, 8),
+                List.of(0, 1, 2, 3, 4, 5, 6, 7, 8),
                 90
             )
         );
 
         Assert.assertEquals(
             step3,
-            ImmutableMap.of(
-                0, ImmutableList.of(
+            Map.of(
+                0, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_1", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_3", 40))
                 ),
-                1, ImmutableList.of(
+                1, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_2", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_4", 40))
                 ),
-                2, ImmutableList.of(
+                2, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_3", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_5", 40))
                 ),
-                3, ImmutableList.of(
+                3, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_4", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_6", 40))
                 ),
-                4, ImmutableList.of(
+                4, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_5", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_7", 40))
                 ),
-                5, ImmutableList.of(
+                5, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_6", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_2_8", 40))
                 ),
-                6, ImmutableList.of(
+                6, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_7", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_3_1", 10)),
                     new RoleAwareJob(STANDBY, new Job("index_1_1", 4)),
@@ -353,7 +355,7 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new RoleAwareJob(STANDBY, new Job("index_1_5", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_7", 4))
                 ),
-                7, ImmutableList.of(
+                7, List.of(
                     new RoleAwareJob(LEADER, new Job("index_2_8", 40)),
                     new RoleAwareJob(STANDBY, new Job("index_3_2", 10)),
                     new RoleAwareJob(STANDBY, new Job("index_1_2", 4)),
@@ -361,7 +363,7 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new RoleAwareJob(STANDBY, new Job("index_1_6", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_1_8", 4))
                 ),
-                8, ImmutableList.of(
+                8, List.of(
                     new RoleAwareJob(LEADER, new Job("index_3_1", 10)),
                     new RoleAwareJob(LEADER, new Job("index_1_1", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_3", 4)),
@@ -369,7 +371,7 @@ public class LeaderReplicaDistributionServiceV2Test {
                     new RoleAwareJob(LEADER, new Job("index_1_7", 4)),
                     new RoleAwareJob(STANDBY, new Job("index_2_1", 40))
                 ),
-                9, ImmutableList.of(
+                9, List.of(
                     new RoleAwareJob(LEADER, new Job("index_3_2", 10)),
                     new RoleAwareJob(LEADER, new Job("index_1_2", 4)),
                     new RoleAwareJob(LEADER, new Job("index_1_4", 4)),

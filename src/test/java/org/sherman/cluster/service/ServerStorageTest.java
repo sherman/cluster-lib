@@ -19,7 +19,7 @@ package org.sherman.cluster.service;
  * limitations under the License.
  */
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.sherman.cluster.domain.ServerNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ public class ServerStorageTest {
 
     @Test
     public void getRandom() {
-        ServerStorage serverStorage = new ServerStorageImpl(
-            ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
+        var serverStorage = new ServerStorageImpl(
+            List.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
         );
 
-        for (int i = 0; i < 100; i++) {
-            ServerNode node = serverStorage.getRandom();
+        for (var i = 0; i < 100; i++) {
+            var node = serverStorage.getRandom();
             log.info("{}", node);
         }
     }

@@ -19,33 +19,31 @@ package org.sherman.cluster.service;
  * limitations under the License.
  */
 
-import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.sherman.cluster.domain.Ring;
 import org.sherman.cluster.domain.ServerNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class VirtualNodeShardingServiceTest {
     private static final Logger log = LoggerFactory.getLogger(VirtualNodeShardingServiceTest.class);
 
     @Test
     public void getByKey() {
-        ServerStorage serverStorage = new ServerStorageImpl(
-            ImmutableList.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
+        var serverStorage = new ServerStorageImpl(
+            List.of(new ServerNode("1", "192.168.5.1"), new ServerNode("2", "192.168.5.2"), new ServerNode("3", "192.168.5.3"))
         );
 
-        Ring ring = new Ring(128); // must be enough buckets to spread a data evenly
+        var ring = new Ring(128); // must be enough buckets to spread a data evenly
 
-        HashShardingService shardingService = new VirtualNodeShardingService(serverStorage, ring);
+        var shardingService = new VirtualNodeShardingService(serverStorage, ring);
 
-        Map<ServerNode, AtomicInteger> distribution = new HashMap<>();
-        for (int i = 0; i < 1024 * 1024; i++) {
-            ServerNode serverNode = shardingService.getNodeByKey(String.valueOf(i));
+        var distribution = new HashMap<ServerNode, AtomicInteger>();
+        for (var i = 0; i < 1024 * 1024; i++) {
+            var serverNode = shardingService.getNodeByKey(String.valueOf(i));
             distribution.putIfAbsent(serverNode, new AtomicInteger());
             distribution.get(serverNode).incrementAndGet();
         }

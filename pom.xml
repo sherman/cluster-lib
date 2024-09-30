@@ -10,6 +10,7 @@
 
     <properties>
         <compiler.version>21</compiler.version>
+        <java.version>21</java.version>
     </properties>
 
     <dependencies>
@@ -87,10 +88,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.11.1-SNAPSHOT</version>
                 <configuration>
-                    <source>${compiler.version}</source>
-                    <target>${compiler.version}</target>
+                    <release>${java.version}</release>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                        <arg>--add-modules=jdk.incubator.vector</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

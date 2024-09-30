@@ -24,13 +24,13 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
         List<Integer> actual = new ArrayList<>();
         if (!parameters.getPrevNodes().isEmpty()) {
             // handle removed nodes
-            List<Integer> removed = ListUtils.getRemoved(parameters.getPrevNodes(), parameters.getNodes());
-            Set<Integer> moved = new HashSet<>();
-            Deque<Integer> newList = new ArrayDeque<>(parameters.getNodes());
-            for (int node : parameters.getPrevNodes()) {
+            var removed = ListUtils.getRemoved(parameters.getPrevNodes(), parameters.getNodes());
+            var moved = new HashSet<Integer>();
+            var newList = new ArrayDeque<>(parameters.getNodes());
+            for (var node : parameters.getPrevNodes()) {
                 if (removed.contains(node)) {
                     while (!newList.isEmpty()) {
-                        int lastNode = newList.removeLast();
+                        var lastNode = newList.removeLast();
                         if (!moved.contains(lastNode)) {
                             actual.add(lastNode);
                             moved.add(lastNode);
@@ -45,7 +45,7 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
             }
 
             // handle added nodes
-            for (int node : parameters.getNodes()) {
+            for (var node : parameters.getNodes()) {
                 if (!actual.contains(node)) {
                     actual.add(node);
                 }
@@ -56,19 +56,19 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
 
         logger.info("Actual list: [{}]", actual);
 
-        Deque<Integer> nodes = new ArrayDeque<>(actual);
-        int total = 0;
-        Map<Integer, Integer> shardsToReplicas = new HashMap<>();
-        Iterator<Integer> nodeIterator = nodes.iterator();
+        var nodes = new ArrayDeque<>(actual);
+        var total = 0;
+        var shardsToReplicas = new HashMap<Integer, Integer>();
+        var nodeIterator = nodes.iterator();
 
-        Map<Integer, List<Integer>> result = new HashMap<>();
+        var result = new HashMap<Integer, List<Integer>>();
 
-        int maxNumberOfReplicas = parameters.getShards().size() * parameters.getReplicas();
+        var maxNumberOfReplicas = parameters.getShards().size() * parameters.getReplicas();
         while (total < maxNumberOfReplicas) {
-            for (int shard : parameters.getShards()) {
+            for (var shard : parameters.getShards()) {
                 // get appropriate node
                 while (true) {
-                    int node;
+                    var node = 0;
                     if (nodeIterator.hasNext()) {
                         node = nodeIterator.next();
                     } else {
@@ -76,14 +76,14 @@ public class ReplicaDistributionServiceImplV2 implements ReplicaDistributionServ
                         node = nodeIterator.next();
                     }
 
-                    List<Integer> shards = result.computeIfAbsent(node, ignored -> new ArrayList<>());
+                    var shards = result.computeIfAbsent(node, ignored -> new ArrayList<>());
                     if (!shards.contains(shard)) {
                         shards.add(shard);
                         break;
                     }
                 }
 
-                int replicas = shardsToReplicas.getOrDefault(shard, 0);
+                var replicas = shardsToReplicas.getOrDefault(shard, 0);
                 shardsToReplicas.put(shard, replicas + 1);
                 total++;
                 Preconditions.checkArgument(shardsToReplicas.get(shard) <= parameters.getReplicas());

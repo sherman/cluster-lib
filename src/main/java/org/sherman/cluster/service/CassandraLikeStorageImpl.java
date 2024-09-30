@@ -3,21 +3,34 @@ package org.sherman.cluster.service;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.TreeRangeSet;
+import java.util.AbstractMap;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.sherman.cluster.domain.ServerNode;
 import org.sherman.cluster.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-
 /**
  * @author Denis M. Gabaydulin
  * @since 08.03.19
  */
+@SuppressWarnings("UnstableApiUsage")
 public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
     private static final Logger log = LoggerFactory.getLogger(CassandraLikeStorageImpl.class);
 
@@ -40,9 +53,9 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
     }
 
     private void init() {
-        SortedSet<ServerNodeWithToken> serversWithTokens = new TreeSet<>();
+        var serversWithTokens = new TreeSet<ServerNodeWithToken>();
 
-        for (ServerNode serverNode : serverStorage.getServers()) {
+        for (var serverNode : serverStorage.getServers()) {
             Set<Long> tokens = generateTokens();
 
             log.info("Tokens: [{}]", tokens);
@@ -55,12 +68,12 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
         log.info("Servers with tokens: [{}]", serversWithTokens);
 
         Long prevToken = null;
-        for (ServerNodeWithToken serverNodeWithToken : serversWithTokens) {
+        for (var serverNodeWithToken : serversWithTokens) {
             if (prevToken == null) {
                 prevToken = closedRange.lowerEndpoint();
             }
 
-            Range<Long> range = Range.closed(prevToken, serverNodeWithToken.token);
+            var range = Range.closed(prevToken, serverNodeWithToken.token);
 
             nodesToRanges.get(serverNodeWithToken.serverNode).add(range);
             rangesToServerNodes.put(range, serverNodeWithToken.serverNode);
@@ -69,8 +82,8 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
             prevToken = serverNodeWithToken.token + 1;
         }
 
-        ServerNode serverNode = serverStorage.getRandom();
-        Range<Long> range = Range.closed(prevToken, closedRange.upperEndpoint());
+        var serverNode = serverStorage.getRandom();
+        var range = Range.closed(prevToken, closedRange.upperEndpoint());
         nodesToRanges.get(serverNode).add(range);
         rangesToServerNodes.put(range, serverNode);
         rangesToElements.put(range, new HashSet<>());
@@ -93,35 +106,36 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
     @Override
     public Map<ServerNode, Integer> getDistribution() {
         return rangesToServerNodes.asMapOfRanges().entrySet().stream()
-            .map(e -> new AbstractMap.SimpleImmutableEntry<>(e.getValue(), rangesToElements.getEntry(e.getKey().lowerEndpoint()).getValue().size()))
-            .collect(Collectors.groupingBy((Function<AbstractMap.SimpleImmutableEntry<ServerNode, Integer>, ServerNode>) AbstractMap.SimpleImmutableEntry::getKey))
+            .map(e -> Map.entry(e.getValue(), rangesToElements.getEntry(e.getKey().lowerEndpoint()).getValue().size()))
+            .collect(Collectors.groupingBy((Function<Map.Entry<ServerNode, Integer>, ServerNode>) Map.Entry::getKey))
             .entrySet().stream()
-            .map((Function<Map.Entry<ServerNode, List<AbstractMap.SimpleImmutableEntry<ServerNode, Integer>>>, Map.Entry<ServerNode, Integer>>) entry -> new AbstractMap.SimpleImmutableEntry<>(
-                entry.getKey(),
-                entry.getValue().stream().map(AbstractMap.SimpleImmutableEntry::getValue).reduce(0, (a, b) -> a + b)
-            ))
+            .map((Function<Map.Entry<ServerNode, List<Map.Entry<ServerNode, Integer>>>, Map.Entry<ServerNode, Integer>>) entry ->
+                Map.entry(
+                    entry.getKey(),
+                    entry.getValue().stream().map(Map.Entry::getValue).reduce(0, Integer::sum)
+                ))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
     public void addServer(ServerNode serverNode) {
         // generate tokens for a new server
-        Set<Long> tokens = generateTokens();
+        var tokens = generateTokens();
         log.info("Tokens: [{}]", tokens);
-        SortedSet<ServerNodeWithToken> serversWithTokens = new TreeSet<>();
+        var serversWithTokens = new TreeSet<ServerNodeWithToken>();
         tokens.forEach(t -> serversWithTokens.add(new ServerNodeWithToken(serverNode, t)));
 
-        Map<ServerNode, RangeSet<Long>> newNodesToRanges = new HashMap<>();
-        RangeMap<Long, ServerNode> newRangesToServerNodes = TreeRangeMap.create();
-        RangeMap<Long, Set<String>> newRangesToElements = TreeRangeMap.create();
+        var newNodesToRanges = new HashMap<ServerNode, RangeSet<Long>>();
+        var newRangesToServerNodes = TreeRangeMap.<Long, ServerNode>create();
+        var newRangesToElements = TreeRangeMap.<Long, Set<String>>create();
         Map<Range<Long>, List<Range<Long>>> replacement = new HashMap<>();
 
         long sum1 = 0;
         long sum2 = 0;
 
-        for (Long token : tokens) {
-            for (ServerNode node : nodesToRanges.keySet()) {
-                for (Range<Long> range : nodesToRanges.get(node).asRanges()) {
+        for (var token : tokens) {
+            for (var node : nodesToRanges.keySet()) {
+                for (var range : nodesToRanges.get(node).asRanges()) {
                     if (range.contains(token)) {
                         if (range.lowerEndpoint().equals(range.upperEndpoint())) {
                             log.info("Can't split a single point range");
@@ -164,15 +178,15 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
         newNodesToRanges.put(serverNode, TreeRangeSet.create());
 
         // actual replace
-        for (ServerNode node : nodesToRanges.keySet()) {
+        for (var node : nodesToRanges.keySet()) {
             newNodesToRanges.putIfAbsent(node, TreeRangeSet.create());
-            for (Range<Long> range : nodesToRanges.get(node).asRanges()) {
+            for (var range : nodesToRanges.get(node).asRanges()) {
                 if (replacement.containsKey(range)) {
-                    Range<Long> r1 = replacement.get(range).get(0);
-                    Range<Long> r2 = replacement.get(range).get(1);
+                    var r1 = replacement.get(range).get(0);
+                    var r2 = replacement.get(range).get(1);
 
-                    Range<Long> rMax = getMax(r1, r2);
-                    Range<Long> rMin = getMin(r1, r2);
+                    var rMax = getMax(r1, r2);
+                    var rMin = getMin(r1, r2);
 
                     if (getRangeLength(newNodesToRanges.get(node)) > getRangeLength(newNodesToRanges.get(serverNode))) {
                         addRange(serverNode, newNodesToRanges, newRangesToServerNodes, newRangesToElements, node, rMin, rMax);
@@ -248,7 +262,7 @@ public class CassandraLikeStorageImpl implements CassandraLikeStorage<Long> {
     }
 
     private SortedSet<Long> generateTokens() {
-        SortedSet<Long> tokens = new TreeSet<>();
+        var tokens = new TreeSet<Long>();
         for (int i = 0; i < initialTokens; i++) {
             tokens.add(ThreadLocalRandom.current().nextLong(closedRange.lowerEndpoint(), closedRange.upperEndpoint()));
         }

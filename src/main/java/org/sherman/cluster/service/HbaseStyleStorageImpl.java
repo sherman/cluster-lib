@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * @author Denis M. Gabaydulin
  * @since 04.03.19
  */
+@SuppressWarnings("UnstableApiUsage")
 public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
     private static final Logger log = LoggerFactory.getLogger(HbaseStyleStorageImpl.class);
 
@@ -42,15 +43,15 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
     }
 
     private void init() {
-        Long bound = closedRange.upperEndpoint() / serverStorage.getServers().size();
+        var bound = closedRange.upperEndpoint() / serverStorage.getServers().size();
 
         log.info("Size: {}", bound);
 
-        long init = closedRange.lowerEndpoint();
+        var init = closedRange.lowerEndpoint();
 
-        for (int i = 0; i < serverStorage.getServers().size(); i++) {
-            ServerNode serverNode = serverStorage.getServers().get(i);
-            Range<Long> range = Range.closed(init, i == serverStorage.getServers().size() - 1 ? closedRange.upperEndpoint() : init + bound);
+        for (var i = 0; i < serverStorage.getServers().size(); i++) {
+            var serverNode = serverStorage.getServers().get(i);
+            var range = Range.closed(init, i == serverStorage.getServers().size() - 1 ? closedRange.upperEndpoint() : init + bound);
             rangesToServerNodes.put(range, serverNode);
             rangesToElements.put(range, new HashSet<>());
 
@@ -64,16 +65,16 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
         Preconditions.checkArgument(range.upperEndpoint() - range.lowerEndpoint() > 2, "Can't split region, too small!");
 
         // split region
-        long split = (range.upperEndpoint() + range.lowerEndpoint()) / 2;
-        Range<Long> left = Range.closed(range.lowerEndpoint(), split);
-        Range<Long> right = Range.closed(split + 1, range.upperEndpoint());
+        var split = (range.upperEndpoint() + range.lowerEndpoint()) / 2;
+        var left = Range.closed(range.lowerEndpoint(), split);
+        var right = Range.closed(split + 1, range.upperEndpoint());
 
         // split elements
-        Set<Long> leftKeys = rangesToElements.get(range.lowerEndpoint()).stream()
+        var leftKeys = rangesToElements.get(range.lowerEndpoint()).stream()
             .filter(left::contains)
             .collect(Collectors.toSet());
 
-        Set<Long> rightKeys = rangesToElements.get(range.lowerEndpoint()).stream()
+        var rightKeys = rangesToElements.get(range.lowerEndpoint()).stream()
             .filter(right::contains)
             .collect(Collectors.toSet());
 
@@ -83,7 +84,7 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
         rangesToElements.put(right, rightKeys);
 
         // update ranges
-        ServerNode prevNode = rangesToServerNodes.get(range.lowerEndpoint());
+        var prevNode = rangesToServerNodes.get(range.lowerEndpoint());
         rangesToServerNodes.remove(range);
         rangesToServerNodes.put(left, prevNode); // keep a half of elements on the prev node
 
@@ -98,7 +99,7 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
 
     @Override
     public void putKey(@NotNull Long key) {
-        Set<Long> keys = rangesToElements.get(key);
+        var keys = rangesToElements.get(key);
         if (keys.size() >= maxElements) {
             splitRange(rangesToElements.getEntry(key).getKey());
         }
@@ -115,13 +116,14 @@ public class HbaseStyleStorageImpl implements HbaseStyleStorage<Long> {
     @Override
     public Map<ServerNode, Integer> getDistribution() {
         return rangesToServerNodes.asMapOfRanges().entrySet().stream()
-            .map(e -> new SimpleImmutableEntry<>(e.getValue(), rangesToElements.getEntry(e.getKey().lowerEndpoint()).getValue().size()))
-            .collect(Collectors.groupingBy((Function<SimpleImmutableEntry<ServerNode, Integer>, ServerNode>) SimpleImmutableEntry::getKey))
+            .map(e -> Map.entry(e.getValue(), rangesToElements.getEntry(e.getKey().lowerEndpoint()).getValue().size()))
+            .collect(Collectors.groupingBy((Function<Map.Entry<ServerNode, Integer>, ServerNode>) Map.Entry::getKey))
             .entrySet().stream()
-            .map((Function<Entry<ServerNode, List<SimpleImmutableEntry<ServerNode, Integer>>>, Entry<ServerNode, Integer>>) entry -> new SimpleImmutableEntry<>(
-                entry.getKey(),
-                entry.getValue().stream().map(SimpleImmutableEntry::getValue).reduce(0, (a, b) -> a + b)
-            ))
+            .map((Function<Entry<ServerNode, List<Map.Entry<ServerNode, Integer>>>, Entry<ServerNode, Integer>>) entry ->
+                Map.entry(
+                    entry.getKey(),
+                    entry.getValue().stream().map(Map.Entry::getValue).reduce(0, Integer::sum)
+                ))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 }

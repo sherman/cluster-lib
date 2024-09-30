@@ -19,17 +19,15 @@ package org.sherman.cluster.service;
  * limitations under the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.sherman.cluster.domain.Ring;
 import org.sherman.cluster.domain.ServerNode;
 import org.sherman.cluster.domain.VirtualNode;
 import org.sherman.cluster.util.RoundRobinIterator;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class VirtualNodeShardingService implements HashShardingService {
     private final Ring ring;
@@ -45,9 +43,9 @@ public class VirtualNodeShardingService implements HashShardingService {
     }
 
     private void init() {
-        List<ServerNode> servers = serverStorage.getServers();
+        var servers = serverStorage.getServers();
 
-        RoundRobinIterator roundRobinIterator = new RoundRobinIterator(servers.size());
+        var roundRobinIterator = new RoundRobinIterator(servers.size());
 
         virtualNodesToServerNodes.putAll(
             ring.getVirtualNodes().stream()
@@ -69,7 +67,7 @@ public class VirtualNodeShardingService implements HashShardingService {
     @NotNull
     @Override
     public ServerNode getNodeByKey(@NotNull byte[] key) {
-        VirtualNode node = ring.getByKey(key);
+        var node = ring.getByKey(key);
         return virtualNodesToServerNodes.get(node);
     }
 }
