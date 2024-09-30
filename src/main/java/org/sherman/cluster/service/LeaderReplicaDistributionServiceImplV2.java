@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.sherman.cluster.domain.Job;
 import org.sherman.cluster.domain.Jobs;
 import org.sherman.cluster.domain.LeaderReplicaDistribution;
@@ -47,7 +48,10 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
         // distribute all leader jobs between nodes evenly (based on requirement)
         for (var job : jobs) {
             var nodesSortedByCpu = cpuPerNodes.entrySet().stream()
-                .sorted(Comparator.comparingInt(Map.Entry::getValue))
+                .sorted(
+                    Comparator.comparing((Function<Map.Entry<Integer, Integer>, Integer>) Map.Entry::getValue)
+                        .thenComparing(Map.Entry::getKey)
+                )
                 .map(Map.Entry::getKey)
                 .collect(ImmutableList.toImmutableList());
 
