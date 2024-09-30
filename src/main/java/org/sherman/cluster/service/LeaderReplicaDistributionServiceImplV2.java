@@ -57,8 +57,7 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
 
             for (var node : nodesSortedByCpu) {
                 nodesToJobs.get(node).addLeader(job);
-                var current = cpuPerNodes.get(node);
-                cpuPerNodes.put(node, current + job.getCpus());
+                cpuPerNodes.computeIfPresent(node, (k, current) -> current + job.getCpus());
                 break;
             }
         }
@@ -73,8 +72,7 @@ public class LeaderReplicaDistributionServiceImplV2 implements LeaderReplicaDist
             for (var node : nodesSortedByCpu) {
                 if (!nodesToJobs.get(node).contains(job)) {
                     nodesToJobs.get(node).addStandby(job);
-                    var current = cpuPerNodes.get(node);
-                    cpuPerNodes.put(node, current + job.getCpus());
+                    cpuPerNodes.computeIfPresent(node, (k, current) -> current + job.getCpus());
                     break;
                 }
             }
