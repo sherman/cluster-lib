@@ -3,6 +3,11 @@ package org.sherman.cluster.service;
 import static org.sherman.cluster.domain.Role.LEADER;
 import static org.sherman.cluster.domain.Role.STANDBY;
 
+import com.beust.jcommander.internal.Lists;
+import com.google.common.hash.Hashing;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.sherman.cluster.domain.Job;
@@ -27,7 +32,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                     2,
                     List.of(0, 1, 2, 3),
                     90
-                )
+                ),
+                Map.of()
             ),
             Map.of(
                 0, List.of(new RoleAwareJob(LEADER, new Job("index_1", 40))),
@@ -55,7 +61,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                     2,
                     List.of(0, 1, 2, 3),
                     90
-                )
+                ),
+                Map.of()
             ),
             Map.of(
                 0, List.of(
@@ -102,7 +109,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                     2,
                     List.of(0, 1, 2, 3),
                     90
-                )
+                ),
+                Map.of()
             ),
             Map.of(
                 0, List.of(
@@ -142,7 +150,7 @@ public class LeaderReplicaDistributionServiceV2Test {
     public void case4() {
         var distributionService = new LeaderReplicaDistributionServiceImplV2();
 
-        // first iteration, add 8-shard index
+        // first iteration, add 8-shar  d index
         var step1 = distributionService.distribute(
             new LeaderReplicaDistribution(
                 List.of(
@@ -158,7 +166,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                 2,
                 List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                 90
-            )
+            ),
+            Map.of()
         );
 
         Assert.assertEquals(
@@ -227,7 +236,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                 2,
                 List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                 90
-            )
+            ),
+            step1
         );
 
         Assert.assertEquals(
@@ -314,7 +324,8 @@ public class LeaderReplicaDistributionServiceV2Test {
                 2,
                 List.of(0, 1, 2, 3, 4, 5, 6, 7, 8),
                 90
-            )
+            ),
+            step2
         );
 
         Assert.assertEquals(
@@ -383,4 +394,156 @@ public class LeaderReplicaDistributionServiceV2Test {
             logger.info("[{}] ([{}])", leaderCpu, totalCpu);
         }
     }
+
+    @Test
+    public void case5() {
+        var nodes = List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9); // 10 nodes
+
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
+
+        var step1 = distributionService.distribute(
+            new LeaderReplicaDistribution(
+                List.of(
+                    new Job("ap_1_1", 40),
+                    new Job("ap_1_2", 40),
+                    new Job("ap_1_3", 40),
+                    new Job("ap_1_4", 40),
+                    new Job("ap_1_5", 40),
+                    new Job("ap_1_6", 40),
+                    new Job("ap_1_7", 40),
+                    new Job("ap_1_8", 40),
+                    new Job("ap_1_9", 10),
+                    new Job("ap_1_10", 20),
+                    new Job("ap_1_11", 20)
+                ),
+                2,
+                nodes,
+                90
+            ),
+            Map.of()
+        );
+
+        for (var nodeDistribution : step1.entrySet()) {
+            logger.info("Node: [{}]", nodeDistribution.getKey());
+            for (var job : nodeDistribution.getValue()) {
+                logger.info("Job: [{}]", job);
+            }
+        }
+
+        var step2 = distributionService.distribute(
+            new LeaderReplicaDistribution(
+                List.of(
+                    new Job("ap_1_1", 40),
+                    new Job("ap_1_2", 40),
+                    new Job("ap_1_3", 40),
+                    new Job("ap_1_4", 40),
+                    new Job("ap_1_5", 40),
+                    new Job("ap_1_6", 40),
+                    new Job("ap_1_7", 40),
+                    new Job("ap_1_8", 40),
+                    new Job("ap_1_9", 10),
+                    new Job("ap_1_10", 10),
+                    new Job("ap_1_11", 20),
+                    new Job("ap_2_1", 40),
+                    new Job("ap_2_2", 40),
+                    new Job("ap_2_3", 40),
+                    new Job("ap_2_4", 40),
+                    new Job("ap_2_5", 40),
+                    new Job("ap_2_6", 40),
+                    new Job("ap_2_7", 40),
+                    new Job("ap_2_8", 40),
+                    new Job("ap_2_9", 10),
+                    new Job("ap_2_10", 20),
+                    new Job("ap_2_11", 20)
+                ),
+                2,
+                nodes,
+                90
+            ),
+            step1
+        );
+
+        for (var nodeDistribution : step1.entrySet()) {
+            logger.info("Node: [{}]", nodeDistribution.getKey());
+            var state1 = Lists.newArrayList(nodeDistribution.getValue());
+            var state2 = Lists.newArrayList(step2.get(nodeDistribution.getKey()));
+            Collections.sort(state1, COMPARATOR);
+            Collections.sort(state2, COMPARATOR);
+            logger.info("old: [{}]", state1);
+            logger.info("new: [{}]", state2);
+        }
+    }
+
+    @Test
+    public void case6() {
+        var nodes = List.of(0, 1, 2); // 3 nodes
+
+        var distributionService = new LeaderReplicaDistributionServiceImplV2();
+
+        var step1 = distributionService.distribute(
+            new LeaderReplicaDistribution(
+                List.of(
+                    new Job("ap_1_1", 40),
+                    new Job("ap_1_2", 40),
+                    new Job("ap_1_3", 40)
+                ),
+                2,
+                nodes,
+                90
+            ),
+            Map.of()
+        );
+
+        for (var nodeDistribution : step1.entrySet()) {
+            logger.info("Node: [{}]", nodeDistribution.getKey());
+            for (var job : nodeDistribution.getValue()) {
+                logger.info("Job: [{}]", job);
+            }
+        }
+
+        /*var step2 = distributionService.distribute(
+            new LeaderReplicaDistribution(
+                List.of(
+                    new Job("ap_1_1", 40),
+                    new Job("ap_1_2", 40),
+                    new Job("ap_1_3", 40),
+                    new Job("ap_1_4", 40),
+                    new Job("ap_1_5", 40),
+                    new Job("ap_1_6", 40),
+                    new Job("ap_1_7", 40),
+                    new Job("ap_1_8", 40),
+                    new Job("ap_1_9", 10),
+                    new Job("ap_1_10", 10),
+                    new Job("ap_1_11", 20),
+                    new Job("ap_2_1", 40),
+                    new Job("ap_2_2", 40),
+                    new Job("ap_2_3", 40),
+                    new Job("ap_2_4", 40),
+                    new Job("ap_2_5", 40),
+                    new Job("ap_2_6", 40),
+                    new Job("ap_2_7", 40),
+                    new Job("ap_2_8", 40),
+                    new Job("ap_2_9", 10),
+                    new Job("ap_2_10", 20),
+                    new Job("ap_2_11", 20)
+                ),
+                2,
+                nodes,
+                90
+            ),
+            step1
+        );
+
+        for (var nodeDistribution : step1.entrySet()) {
+            logger.info("Node: [{}]", nodeDistribution.getKey());
+            var state1 = Lists.newArrayList(nodeDistribution.getValue());
+            var state2 = Lists.newArrayList(step2.get(nodeDistribution.getKey()));
+            Collections.sort(state1, COMPARATOR);
+            Collections.sort(state2, COMPARATOR);
+            logger.info("old: [{}]", state1);
+            logger.info("new: [{}]", state2);
+        }*/
+    }
+
+    private static final Comparator<RoleAwareJob> COMPARATOR = Comparator.comparing(o -> o.getJob().getId());
 }
