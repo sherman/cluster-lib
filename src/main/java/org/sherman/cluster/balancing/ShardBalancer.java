@@ -2,6 +2,7 @@ package org.sherman.cluster.balancing;
 
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -292,10 +293,7 @@ final class ShardBalancer {
         for (var node : nodes) {
             weighted.add(new WeightedNode(node, weights.get(node)));
         }
-        weighted.sort((left, right) -> {
-            var cmp = Double.compare(left.weight(), right.weight());
-            return cmp != 0 ? cmp : left.node().getId().compareTo(right.node().getId());
-        });
+        weighted.sort(Comparator.comparingDouble(WeightedNode::weight).thenComparing(left -> left.node().getId()));
         return List.copyOf(weighted);
     }
 
