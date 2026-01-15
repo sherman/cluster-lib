@@ -69,6 +69,41 @@ public class ShardBalancerRebalanceEdgeCasesTest {
     }
 
     /**
+     * Verifies throttled shards are counted in weight and push relocations to other nodes.
+     */
+    @Test
+    public void rebalanceAccountsForThrottledShards() {
+        var balancer = new ShardBalancer();
+        var nodeA = new SearchNode("node-a");
+        var nodeB = new SearchNode("node-b");
+        var nodeC = new SearchNode("node-c");
+
+        var state = BalancingState.builder()
+            .addNode(nodeA, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeB, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeC, NodeLoad.of(0.0d, 0.0d))
+            .addAssignedShard(nodeA, new SearchShard("index", 1))
+            .addAssignedShard(nodeA, new SearchShard("index", 2))
+            .addAssignedShard(nodeA, new SearchShard("index", 3))
+            .addThrottledShard(nodeB, new SearchShard("index", 4))
+            .addThrottledShard(nodeB, new SearchShard("index", 5))
+            .build();
+
+        var result = balancer.rebalance(
+            state,
+            List.of(),
+            factors(1.0d, 1.0d, 1.0d, 1.0d),
+            0.1d
+        );
+
+        Assert.assertEquals(result.relocations().size(), 1);
+        var relocation = result.relocations().getFirst();
+        Assert.assertEquals(relocation.from(), nodeA);
+        Assert.assertEquals(relocation.to(), nodeC);
+        Assert.assertTrue(result.state().getAssignedShards(nodeB).isEmpty());
+    }
+
+    /**
      * Verifies that the most imbalanced index is processed first.
      */
     @Test
