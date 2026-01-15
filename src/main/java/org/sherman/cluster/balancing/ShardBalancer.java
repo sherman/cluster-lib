@@ -13,6 +13,7 @@ import org.sherman.cluster.domain.SearchShard;
 
 final class ShardBalancer {
     private static final double WEIGHT_EPSILON = 1e-6d;
+    private static final int MAX_RELOCATIONS = 10_000;
 
     AllocationResult allocate(
         BalancingState state,
@@ -106,6 +107,8 @@ final class ShardBalancer {
 
         var workingState = state.copy();
         var relocations = new ArrayList<Relocation>();
+        var metrics = RebalanceMetrics.builder();
+        metrics.throttledShards(countThrottledShards(workingState));
         var indices = sortIndicesByImbalance(workingState);
         for (var index : indices) {
             var relevantNodes = findRelevantNodes(workingState, deciders, index);
@@ -114,10 +117,17 @@ final class ShardBalancer {
             }
             // Keep the node list sorted by weight and move shards from heaviest to lightest.
             var nodesByWeight = sortNodesByWeight(workingState, relevantNodes, factors);
+            if (nodesByWeight.getLast().weight() - nodesByWeight.getFirst().weight() < threshold) {
+                continue;
+            }
             var lowIndex = 0;
             var highIndex = nodesByWeight.size() - 1;
 
             while (lowIndex < highIndex) {
+                if (relocations.size() >= MAX_RELOCATIONS) {
+                    return new RebalanceResult(workingState, relocations, metrics.build());
+                }
+
                 var low = nodesByWeight.get(lowIndex);
                 var high = nodesByWeight.get(highIndex);
                 // Stop when the max-min delta is below the threshold.
@@ -126,9 +136,11 @@ final class ShardBalancer {
                 }
 
                 // Try to relocate the highest-id shard first from heavy to light node.
-                var relocation = tryRelocate(index, high.node(), low.node(), workingState, deciders);
+                var relocation = tryRelocate(index, high.node(), low.node(), workingState, deciders, metrics);
+                metrics.addRelocationAttempt();
                 if (relocation.isPresent()) {
                     relocations.add(relocation.get());
+                    metrics.addRelocationCompleted();
                     nodesByWeight = sortNodesByWeight(workingState, relevantNodes, factors);
                     lowIndex = 0;
                     highIndex = nodesByWeight.size() - 1;
@@ -147,7 +159,7 @@ final class ShardBalancer {
             }
         }
 
-        return new RebalanceResult(workingState, relocations);
+        return new RebalanceResult(workingState, relocations, metrics.build());
     }
 
     private AllocationDecision evaluateDeciders(
@@ -292,7 +304,8 @@ final class ShardBalancer {
         SearchNode from,
         SearchNode to,
         BalancingState state,
-        List<AllocationDecider> deciders
+        List<AllocationDecider> deciders,
+        RebalanceMetrics.Builder metrics
     ) {
         if (from.equals(to)) {
             return Optional.empty();
@@ -309,8 +322,19 @@ final class ShardBalancer {
                 state.addShard(to, shard, AllocationDecision.YES);
                 return Optional.of(new Relocation(from, to, shard));
             }
+            if (decision == AllocationDecision.NO) {
+                metrics.addDeciderReject();
+            }
         }
         return Optional.empty();
+    }
+
+    private int countThrottledShards(BalancingState state) {
+        var total = 0;
+        for (var node : state.getNodes()) {
+            total += state.getThrottledShards(node).size();
+        }
+        return total;
     }
 
     private record WeightedNode(SearchNode node, double weight) {

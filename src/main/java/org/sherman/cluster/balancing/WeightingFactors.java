@@ -18,7 +18,7 @@ final class WeightingFactors {
         ingestFactor = builder.ingestFactor;
         diskUsageFactor = builder.diskUsageFactor;
         var sum = shardFactor + indexFactor + ingestFactor + diskUsageFactor;
-        Preconditions.checkArgument(sum > 0.0d, "Sum of factors must be positive");
+        Preconditions.checkArgument(sum > 0.0d, "At least one factor must be positive");
         shardTheta = shardFactor / sum;
         indexTheta = indexFactor / sum;
         ingestTheta = ingestFactor / sum;
@@ -27,6 +27,15 @@ final class WeightingFactors {
 
     static Builder builder() {
         return new Builder();
+    }
+
+    static WeightingFactors balancedDefaults() {
+        return builder()
+            .shardFactor(1.0d)
+            .indexFactor(1.0d)
+            .ingestFactor(1.0d)
+            .diskUsageFactor(1.0d)
+            .build();
     }
 
     double shardTheta() {

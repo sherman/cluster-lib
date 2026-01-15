@@ -192,6 +192,98 @@ public class ShardBalancerRebalanceEdgeCasesTest {
         Assert.assertEquals(result.state().getShardCount(nodeB), 1);
     }
 
+    /**
+     * Verifies rebalance metrics capture decider rejects and throttled counts.
+     */
+    @Test
+    public void rebalanceReportsMetrics() {
+        var balancer = new ShardBalancer();
+        var nodeA = new SearchNode("node-a");
+        var nodeB = new SearchNode("node-b");
+
+        var state = BalancingState.builder()
+            .addNode(nodeA, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeB, NodeLoad.of(0.0d, 0.0d))
+            .addAssignedShard(nodeA, new SearchShard("index", 1))
+            .addAssignedShard(nodeA, new SearchShard("index", 2))
+            .addAssignedShard(nodeA, new SearchShard("index", 3))
+            .addThrottledShard(nodeB, new SearchShard("index", 4))
+            .build();
+
+        AllocationDecider rejectById = (shard, node, ignored) -> {
+            if (!node.equals(nodeB)) {
+                return AllocationDecision.YES;
+            }
+            return shard.getId() > 2 ? AllocationDecision.NO : AllocationDecision.YES;
+        };
+
+        var result = balancer.rebalance(
+            state,
+            List.of(rejectById),
+            factors(1.0d, 0.0d, 0.0d, 0.0d),
+            0.1d
+        );
+
+        Assert.assertTrue(result.metrics().deciderRejects() >= 1);
+        Assert.assertEquals(result.metrics().throttledShardsCounted(), 1);
+    }
+
+    /**
+     * Verifies the relocation cap prevents unbounded loops in adversarial setups.
+     */
+    @Test
+    public void rebalanceStopsAtRelocationCap() {
+        var balancer = new ShardBalancer();
+        var nodeA = new SearchNode("node-a");
+        var nodeB = new SearchNode("node-b");
+
+        var builder = BalancingState.builder()
+            .addNode(nodeA, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeB, NodeLoad.of(0.0d, 0.0d));
+
+        for (int i = 1; i <= 50; i++) {
+            builder.addAssignedShard(nodeA, new SearchShard("index", i));
+        }
+        var state = builder.build();
+
+        var result = balancer.rebalance(
+            state,
+            List.of(),
+            factors(1.0d, 0.0d, 0.0d, 0.0d),
+            0.0d
+        );
+
+        Assert.assertTrue(result.metrics().relocationsCompleted() >= 1);
+        Assert.assertTrue(result.metrics().relocationAttempts() >= result.metrics().relocationsCompleted());
+        Assert.assertTrue(result.metrics().relocationAttempts() <= 10_000);
+    }
+
+    /**
+     * Verifies no relocations happen when already within threshold.
+     */
+    @Test
+    public void rebalanceEarlyExitsWithinThreshold() {
+        var balancer = new ShardBalancer();
+        var nodeA = new SearchNode("node-a");
+        var nodeB = new SearchNode("node-b");
+
+        var state = BalancingState.builder()
+            .addNode(nodeA, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeB, NodeLoad.of(0.0d, 0.0d))
+            .addAssignedShard(nodeA, new SearchShard("index", 1))
+            .addAssignedShard(nodeB, new SearchShard("index", 2))
+            .build();
+
+        var result = balancer.rebalance(
+            state,
+            List.of(),
+            factors(1.0d, 0.0d, 0.0d, 0.0d),
+            2.0d
+        );
+
+        Assert.assertTrue(result.relocations().isEmpty());
+    }
+
     private static WeightingFactors factors(
         double shardFactor,
         double indexFactor,

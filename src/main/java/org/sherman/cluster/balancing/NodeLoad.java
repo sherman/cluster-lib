@@ -2,6 +2,10 @@ package org.sherman.cluster.balancing;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Captures per-node load inputs for weighting. Values should be normalized (e.g. 0..1 fractions or
+ * percentages) so ingest and disk usage remain comparable across nodes.
+ */
 final class NodeLoad {
     private final double ingestLoad;
     private final double diskUsage;
