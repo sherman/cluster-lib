@@ -233,7 +233,7 @@ final class ShardBalancer {
         if (candidateNext.isEmpty() && currentNext.isPresent()) {
             return current;
         }
-        if (candidateNext.isPresent() && currentNext.isPresent()) {
+        if (candidateNext.isPresent()) {
             var cmp = Integer.compare(candidateNext.getAsInt(), currentNext.getAsInt());
             if (cmp < 0) {
                 return candidate;
