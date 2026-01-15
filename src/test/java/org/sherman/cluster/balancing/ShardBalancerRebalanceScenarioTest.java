@@ -7,6 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ShardBalancerRebalanceScenarioTest {
+    /**
+     * Verifies shards move to a newly added node during rebalance.
+     */
     @Test
     public void rebalanceMovesShardsAfterNodeAdded() {
         var balancer = new ShardBalancer();
@@ -40,6 +43,9 @@ public class ShardBalancerRebalanceScenarioTest {
         Assert.assertFalse(result.state().getAssignedShards(nodeC).isEmpty());
     }
 
+    /**
+     * Verifies the most imbalanced index is rebalanced first.
+     */
     @Test
     public void rebalanceTargetsNewIndexFirst() {
         var balancer = new ShardBalancer();

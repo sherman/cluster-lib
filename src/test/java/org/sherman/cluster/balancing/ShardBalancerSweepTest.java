@@ -13,6 +13,9 @@ import org.testng.annotations.Test;
 public class ShardBalancerSweepTest {
     private static final double REBALANCE_THRESHOLD = 1.1d;
 
+    /**
+     * Verifies allocation balances shards across nodes for small ranges.
+     */
     @Test(dataProvider = "nodesAndShards")
     public void allocateDistributesAcrossNodes(int nodesCount, int shardsCount) {
         var balancer = new ShardBalancer();
@@ -50,6 +53,9 @@ public class ShardBalancerSweepTest {
         Assert.assertTrue(max - min <= 1, "Shard distribution is too uneven");
     }
 
+    /**
+     * Verifies rebalance keeps the shard set intact across node counts.
+     */
     @Test(dataProvider = "nodesAndShards")
     public void rebalancePreservesShardSet(int nodesCount, int shardsCount) {
         var balancer = new ShardBalancer();

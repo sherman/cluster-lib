@@ -6,6 +6,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ShardBalancerPropertyTest {
+    /**
+     * Runs the JUnit Quickcheck properties via a TestNG wrapper.
+     */
     @Test
     public void runQuickcheckProperties() {
         Result result = JUnitCore.runClasses(ShardBalancerQuickcheckProperties.class);

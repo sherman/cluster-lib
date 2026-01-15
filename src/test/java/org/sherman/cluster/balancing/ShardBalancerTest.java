@@ -7,6 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ShardBalancerTest {
+    /**
+     * Verifies that allocation selects the lowest-weight node for a new shard.
+     */
     @Test
     public void assignsShardToLowestWeightNode() {
         var balancer = new ShardBalancer();
@@ -31,6 +34,9 @@ public class ShardBalancerTest {
         Assert.assertFalse(result.unassignedShards().contains(shard));
     }
 
+    /**
+     * Verifies that the tie-breaker favors the node with the next higher shard id.
+     */
     @Test
     public void tieBreakerPrefersNextHigherShardId() {
         var balancer = new ShardBalancer();
@@ -54,6 +60,9 @@ public class ShardBalancerTest {
         Assert.assertTrue(result.state().getAssignedShards(nodeB).contains(shard));
     }
 
+    /**
+     * Verifies that throttled decisions keep shards unassigned but counted on the node.
+     */
     @Test
     public void throttledDecisionKeepsShardUnassignedButAccounted() {
         var balancer = new ShardBalancer();
@@ -82,6 +91,9 @@ public class ShardBalancerTest {
         Assert.assertFalse(result.state().getAssignedShards(nodeA).contains(shard));
     }
 
+    /**
+     * Verifies that rebalancing moves the highest shard id first from a heavy node.
+     */
     @Test
     public void rebalancesByMovingHighestIdShardFirst() {
         var balancer = new ShardBalancer();

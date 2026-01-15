@@ -18,6 +18,9 @@ public class ShardBalancerQuickcheckProperties {
     private static final int MAX_TRIALS = 200;
     private static final double REBALANCE_THRESHOLD = 1.1d;
 
+    /**
+     * Verifies all shards are assigned when nodes are available.
+     */
     @Property(trials = MAX_TRIALS)
     public void allocateAssignsAllShardsWhenNodesAvailable(
         @InRange(min = "0", max = "100") int nodesCount,
@@ -46,6 +49,9 @@ public class ShardBalancerQuickcheckProperties {
         Assert.assertTrue(assigned.containsAll(shards));
     }
 
+    /**
+     * Verifies shards stay unassigned when no nodes are present.
+     */
     @Property(trials = MAX_TRIALS)
     public void allocateKeepsShardsUnassignedWhenNoNodes(
         @InRange(min = "0", max = "100") int nodesCount,
@@ -69,6 +75,9 @@ public class ShardBalancerQuickcheckProperties {
         Assert.assertTrue(result.state().getNodes().isEmpty());
     }
 
+    /**
+     * Verifies rebalance preserves the shard set across randomized inputs.
+     */
     @Property(trials = MAX_TRIALS)
     public void rebalancePreservesShardSet(
         @InRange(min = "0", max = "100") int nodesCount,

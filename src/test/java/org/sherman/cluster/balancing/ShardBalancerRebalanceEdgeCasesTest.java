@@ -7,6 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ShardBalancerRebalanceEdgeCasesTest {
+    /**
+     * Verifies rebalance skips nodes rejected by allocation deciders.
+     */
     @Test
     public void rebalanceSkipsNodesRejectedByDecider() {
         var balancer = new ShardBalancer();
@@ -35,6 +38,9 @@ public class ShardBalancerRebalanceEdgeCasesTest {
         Assert.assertTrue(result.state().getAssignedShards(nodeB).isEmpty());
     }
 
+    /**
+     * Verifies throttled target nodes do not accept relocations.
+     */
     @Test
     public void rebalanceHonorsThrottledTarget() {
         var balancer = new ShardBalancer();
@@ -62,6 +68,9 @@ public class ShardBalancerRebalanceEdgeCasesTest {
         Assert.assertTrue(result.state().getAssignedShards(nodeB).isEmpty());
     }
 
+    /**
+     * Verifies that the most imbalanced index is processed first.
+     */
     @Test
     public void rebalanceUsesMostImbalancedIndexFirst() {
         var balancer = new ShardBalancer();
@@ -91,6 +100,9 @@ public class ShardBalancerRebalanceEdgeCasesTest {
         Assert.assertEquals(result.relocations().get(0).shard().getIndex(), "index-2");
     }
 
+    /**
+     * Verifies rebalance exits when no unique shards can move.
+     */
     @Test
     public void rebalanceStopsWhenNoUniqueShardsToMove() {
         var balancer = new ShardBalancer();
@@ -116,6 +128,9 @@ public class ShardBalancerRebalanceEdgeCasesTest {
         Assert.assertTrue(result.relocations().isEmpty());
     }
 
+    /**
+     * Verifies the threshold stops oscillating moves after a single relocation.
+     */
     @Test
     public void rebalanceStopsAfterThresholdPreventsOscillation() {
         var balancer = new ShardBalancer();
