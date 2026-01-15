@@ -112,6 +112,7 @@ final class ShardBalancer {
         metrics.throttledShards(countThrottledShards(workingState));
         var indices = sortIndicesByImbalance(workingState);
         for (var index : indices) {
+            // Early exit for balanced index: no need to sort nodes if already below threshold.
             var relevantNodes = findRelevantNodes(workingState, deciders, index);
             if (relevantNodes.size() < 2) {
                 continue;
@@ -126,6 +127,7 @@ final class ShardBalancer {
 
             while (lowIndex < highIndex) {
                 if (relocations.size() >= MAX_RELOCATIONS) {
+                    // Guardrail: prevent unbounded loops if threshold/config are pathological.
                     return new RebalanceResult(workingState, relocations, metrics.build());
                 }
 
@@ -242,6 +244,7 @@ final class ShardBalancer {
                 return current;
             }
         }
+        // Final fallback: stable order by node id.
         return candidate.getId().compareTo(current.getId()) < 0 ? candidate : current;
     }
 
