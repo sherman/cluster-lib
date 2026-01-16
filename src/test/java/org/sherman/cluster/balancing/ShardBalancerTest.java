@@ -134,8 +134,7 @@ public class ShardBalancerTest {
             .addNode(nodeB, NodeLoad.of(0.0d, 0.0d))
             .build();
 
-        var shard = new SearchShard("index", 1);
-        var primary = shard;
+        var primary = new SearchShard("index", 1);
         var replica = new SearchShard("index", 1);
 
         var result = balancer.allocate(
