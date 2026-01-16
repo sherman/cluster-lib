@@ -121,6 +121,37 @@ public class ShardBalancerTest {
         Assert.assertEquals(relocation.shard(), new SearchShard("index", 3));
     }
 
+    /**
+     * Verifies primary/replica copies of the same shard are allocated to different nodes.
+     */
+    @Test
+    public void separatesPrimaryAndReplicaOnAllocation() {
+        var balancer = new ShardBalancer();
+        var nodeA = new SearchNode("nodeA");
+        var nodeB = new SearchNode("nodeB");
+        var state = BalancingState.builder()
+            .addNode(nodeA, NodeLoad.of(0.0d, 0.0d))
+            .addNode(nodeB, NodeLoad.of(0.0d, 0.0d))
+            .build();
+
+        var shard = new SearchShard("index", 1);
+        var primary = shard;
+        var replica = new SearchShard("index", 1);
+
+        var result = balancer.allocate(
+            state,
+            List.of(primary, replica),
+            List.of(new ReplicaSeparationDecider()),
+            factors(1.0d, 0.0d, 0.0d, 0.0d)
+        );
+
+        var assignedA = result.state().getAssignedShards(nodeA);
+        var assignedB = result.state().getAssignedShards(nodeB);
+        Assert.assertEquals(assignedA.size() + assignedB.size(), 2);
+        Assert.assertTrue(assignedA.size() <= 1, "Node A should not host both copies");
+        Assert.assertTrue(assignedB.size() <= 1, "Node B should not host both copies");
+    }
+
     private static WeightingFactors factors(
         double shardFactor,
         double indexFactor,

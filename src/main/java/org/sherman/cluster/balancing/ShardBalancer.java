@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.sherman.cluster.domain.SearchNode;
 import org.sherman.cluster.domain.SearchShard;
 
@@ -41,6 +42,9 @@ final class ShardBalancer {
             // Filter nodes by deciders; THROTTLED still counts as a valid target per spec.
             var candidateDecisions = new LinkedHashMap<SearchNode, AllocationDecision>();
             for (var node : workingState.getNodes()) {
+                if (workingState.containsShard(node, shard)) {
+                    continue;
+                }
                 var decision = evaluateDeciders(deciders, shard, node, workingState);
                 if (decision != AllocationDecision.NO) {
                     candidateDecisions.put(node, decision);
