@@ -6,6 +6,8 @@ import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -33,7 +35,7 @@ public class ShardBalancerQuickcheckProperties {
         var effectiveShards = effectiveShardCount(indexCount, shardCount);
         var shards = createShards(indexCount, effectiveShards);
 
-        var builder = BalancingState.builder();
+        var builder = BalancingState.builder().metadataProvider(metadataProvider(ingestSeed, diskSeed));
         var nodes = addNodes(builder, nodesCount, ingestSeed, diskSeed);
 
         var result = new ShardBalancer().allocate(
@@ -65,7 +67,7 @@ public class ShardBalancerQuickcheckProperties {
         var shards = createShards(indexCount, effectiveShards);
 
         var result = new ShardBalancer().allocate(
-            BalancingState.builder().build(),
+            BalancingState.builder().metadataProvider(metadataProvider(ingestSeed, diskSeed)).build(),
             shards,
             List.of(),
             factors(1.0d, 1.0d, 1.0d, 1.0d)
@@ -90,7 +92,7 @@ public class ShardBalancerQuickcheckProperties {
         var effectiveShards = effectiveShardCount(indexCount, shardCount);
         var shards = createShards(indexCount, effectiveShards);
 
-        var builder = BalancingState.builder();
+        var builder = BalancingState.builder().metadataProvider(metadataProvider(ingestSeed, diskSeed));
         var nodes = addNodes(builder, nodesCount, ingestSeed, diskSeed);
 
         if (!shards.isEmpty()) {
@@ -171,5 +173,14 @@ public class ShardBalancerQuickcheckProperties {
             .ingestFactor(ingestFactor)
             .diskUsageFactor(diskUsageFactor)
             .build();
+    }
+
+    private static ShardMetadataProvider metadataProvider(int ingestSeed, int diskSeed) {
+        return shard -> {
+            var rnd = new Random(Objects.hash(shard.getIndex(), shard.getId(), ingestSeed, diskSeed));
+            var disk = 10.0d + rnd.nextDouble() * (1000.0d - 10.0d);
+            var ingest = 2.0d + rnd.nextDouble() * (80.0d - 2.0d);
+            return new ShardMetadata(disk, ingest, true);
+        };
     }
 }

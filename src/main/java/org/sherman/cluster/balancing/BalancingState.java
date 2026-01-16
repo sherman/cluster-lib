@@ -44,11 +44,11 @@ final class BalancingState {
     }
 
     double getIngestLoad(SearchNode node) {
-        return getNodeState(node).getLoad().getIngestLoad();
+        return getNodeState(node).computeIngestLoad();
     }
 
     double getDiskUsage(SearchNode node) {
-        return getNodeState(node).getLoad().getDiskUsage();
+        return getNodeState(node).computeDiskUsage();
     }
 
     Set<SearchShard> getAssignedShards(SearchNode node) {
@@ -116,12 +116,19 @@ final class BalancingState {
 
     static final class Builder {
         private final Map<SearchNode, NodeState> nodes = new LinkedHashMap<>();
+        private ShardMetadataProvider shardMetadataProvider = ShardMetadataProvider.noop();
+
+        Builder metadataProvider(ShardMetadataProvider provider) {
+            Preconditions.checkNotNull(provider, "provider");
+            shardMetadataProvider = provider;
+            return this;
+        }
 
         Builder addNode(SearchNode node, NodeLoad load) {
             Preconditions.checkNotNull(node, "node");
             Preconditions.checkNotNull(load, "load");
             Preconditions.checkArgument(!nodes.containsKey(node), "Node [%s] is already registered", node.getId());
-            nodes.put(node, new NodeState(node, load));
+            nodes.put(node, new NodeState(node, load, shardMetadataProvider));
             return this;
         }
 
@@ -155,26 +162,26 @@ final class BalancingState {
 
     private static final class NodeState {
         private final SearchNode node;
-        private final NodeLoad load;
         private final Map<SearchShard, AllocationDecision> shardDecisions = new HashMap<>();
         private final Map<String, NavigableSet<Integer>> shardIdsByIndex = new HashMap<>();
+        private final ShardMetadataProvider metadataProvider;
+        private final NodeLoad baselineLoad;
 
-        private NodeState(SearchNode node, NodeLoad load) {
+        private NodeState(SearchNode node, NodeLoad load, ShardMetadataProvider metadataProvider) {
             this.node = node;
-            this.load = load;
+            this.metadataProvider = metadataProvider;
+            baselineLoad = load;
         }
 
-        NodeLoad getLoad() {
-            return load;
+        NodeLoad getBaselineLoad() {
+            return baselineLoad;
         }
 
         void addShard(SearchShard shard, AllocationDecision decision) {
             Preconditions.checkNotNull(shard.getIndex(), "shard index");
             Preconditions.checkNotNull(decision, "decision");
             Preconditions.checkArgument(!shardDecisions.containsKey(shard), "Shard [%s] already exists on node [%s]", shard, node.getId());
-            shardDecisions.put(shard, decision);
-            var ids = shardIdsByIndex.computeIfAbsent(shard.getIndex(), ignored -> new TreeSet<>());
-            ids.add(shard.getId());
+            addShardInternal(shard, decision);
         }
 
         void removeAssignedShard(SearchShard shard) {
@@ -246,9 +253,9 @@ final class BalancingState {
         }
 
         NodeState copy() {
-            var copy = new NodeState(node, load);
+            var copy = new NodeState(node, baselineLoad, metadataProvider);
             for (var entry : shardDecisions.entrySet()) {
-                copy.addShard(entry.getKey(), entry.getValue());
+                copy.addShardInternal(entry.getKey(), entry.getValue());
             }
             return copy;
         }
@@ -261,6 +268,40 @@ final class BalancingState {
                 }
             }
             return Set.copyOf(shards);
+        }
+
+        private void addShardInternal(SearchShard shard, AllocationDecision decision) {
+            shardDecisions.put(shard, decision);
+            var ids = shardIdsByIndex.computeIfAbsent(shard.getIndex(), ignored -> new TreeSet<>());
+            ids.add(shard.getId());
+        }
+
+        private double computeIngestLoad() {
+            var ingest = baselineLoad.getIngestLoad();
+            for (var entry : shardDecisions.entrySet()) {
+                var decision = entry.getValue();
+                if (decision == AllocationDecision.YES || decision == AllocationDecision.THROTTLED) {
+                    var metadata = metadataProvider.getMetadata(entry.getKey());
+                    if (metadata != null && metadata.primary()) {
+                        ingest += metadata.ingestLoadDelta();
+                    }
+                }
+            }
+            return ingest;
+        }
+
+        private double computeDiskUsage() {
+            var disk = baselineLoad.getDiskUsage();
+            for (var entry : shardDecisions.entrySet()) {
+                var decision = entry.getValue();
+                if (decision == AllocationDecision.YES || decision == AllocationDecision.THROTTLED) {
+                    var metadata = metadataProvider.getMetadata(entry.getKey());
+                    if (metadata != null) {
+                        disk += metadata.diskUsageDelta();
+                    }
+                }
+            }
+            return disk;
         }
     }
 }
